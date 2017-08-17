@@ -8,5 +8,8 @@
     <Setting Name="PackageThis_com_microsoft_msdn_services_ContentService" Type="(Web Service URL)" Scope="Application">
       <Value Profile="(Default)">http://services.msdn.microsoft.com/ContentServices/ContentService.asmx</Value>
     </Setting>
+    <Setting Name="CacheDir" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
   </Settings>
 </SettingsFile>

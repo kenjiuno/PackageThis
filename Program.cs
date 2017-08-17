@@ -14,6 +14,8 @@ namespace PackageThis
         [STAThread]
         static void Main()
         {
+            Properties.Settings.Default.CacheDir = System.IO.Path.Combine(Application.StartupPath, "DL");
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new MainForm());

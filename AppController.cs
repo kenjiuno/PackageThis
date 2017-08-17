@@ -16,10 +16,8 @@ using ContentServiceLibrary;
 // Version variables in this code are collection + "." + version, but ContentItem requires a
 // version and collection, eg. version="10", collection="MSDN"
 
-namespace PackageThis
-{
-    public class MtpsNode
-    {
+namespace PackageThis {
+    public class MtpsNode {
         public string navAssetId;
         public string navLocale;
         public string navVersion;
@@ -35,9 +33,8 @@ namespace PackageThis
 
 
         public MtpsNode(string navAssetId, string navLocale, string navVersion,
-            string targetContentId, string targetAssetId, string targetLocale, 
-            string targetVersion, string title)
-        {
+            string targetContentId, string targetAssetId, string targetLocale,
+            string targetVersion, string title) {
             this.navAssetId = navAssetId;
             this.navLocale = navLocale;
             this.navVersion = navVersion;
@@ -45,11 +42,11 @@ namespace PackageThis
             this.targetContentId = targetContentId;
 
             this.targetAssetId = targetAssetId.ToLower().StartsWith("assetid:") == true ?
-                targetAssetId.Remove(0,8) : targetAssetId;
+                targetAssetId.Remove(0, 8) : targetAssetId;
 
             this.targetLocale = targetLocale;
             this.targetVersion = targetVersion;
-            
+
 
             this.title = title;
 
@@ -58,8 +55,7 @@ namespace PackageThis
 
     }
 
-    public class AppController
-    {
+    public class AppController {
         private string application = "PackageThisGui";
         private string topNode;
         private string locale;
@@ -78,12 +74,11 @@ namespace PackageThis
         static private Stream resourceStream = typeof(AppController).Assembly.GetManifestResourceStream(
             "PackageThis.Extra.hxs.xslt");
         static private XmlReader transformFile = XmlReader.Create(resourceStream);
-        static private  XslCompiledTransform xform = null;
+        static private XslCompiledTransform xform = null;
 
         // static private StreamWriter sw;
 
-        public AppController(string topNode, string locale, string version, TreeView tocControl, string workingDir)
-        {
+        public AppController(string topNode, string locale, string version, TreeView tocControl, string workingDir) {
             this.topNode = topNode;
             this.locale = locale;
             this.version = version;
@@ -95,8 +90,7 @@ namespace PackageThis
             this.withinHxsDir = Path.Combine(hxsDir, hxsSubDir);
 
 
-            if (xform == null)
-            {
+            if (xform == null) {
                 xform = new XslCompiledTransform(true);
                 xform.Load(transformFile);
             }
@@ -108,19 +102,17 @@ namespace PackageThis
             processNodeList(contentItem, tocControl.Nodes);
         }
 
-        ContentItem lookupTOCNode(string contentIdentifier, string locale, string version)
-        {
-            string[] splitVersion = version.Split(new char[] {'.'});
+        ContentItem lookupTOCNode(string contentIdentifier, string locale, string version) {
+            string[] splitVersion = version.Split(new char[] { '.' });
 
-            ContentItem contentItem = new ContentItem(contentIdentifier, locale, splitVersion[1], 
+            ContentItem contentItem = new ContentItem(contentIdentifier, locale, splitVersion[1],
                 splitVersion[0], application);
             contentItem.Load(false, false);
 
             return contentItem;
         }
 
-        void processNodeList(ContentItem contentItem, TreeNodeCollection tnCollection)
-        {
+        void processNodeList(ContentItem contentItem, TreeNodeCollection tnCollection) {
             XmlDocument xmlDocument = new XmlDocument();
             XmlNamespaceManager nsm = new XmlNamespaceManager(xmlDocument.NameTable);
             nsm.AddNamespace("toc", "urn:mtpg-com:mtps/2004/1/toc");
@@ -128,7 +120,7 @@ namespace PackageThis
             nsm.AddNamespace("asp", "http://msdn2.microsoft.com/asp");
             nsm.AddNamespace("mshelp", "http:/msdn.microsoft.com/mshelp");
 
-            if(string.IsNullOrEmpty(contentItem.toc) == true)
+            if (string.IsNullOrEmpty(contentItem.toc) == true)
                 return;
 
             xmlDocument.LoadXml(contentItem.toc);
@@ -136,8 +128,7 @@ namespace PackageThis
             XmlNodeList nodes = xmlDocument.SelectNodes("/toc:Node/toc:Node", nsm);
 
 
-            foreach(XmlNode node in nodes)
-            {
+            foreach (XmlNode node in nodes) {
                 string title = GetAttribute(node.Attributes["toc:Title"]);
 
                 string target = HttpUtility.UrlDecode(GetAttribute(node.Attributes["toc:Target"]));
@@ -151,12 +142,11 @@ namespace PackageThis
                 string subTreeLocale = GetAttribute(node.Attributes["toc:SubTreeLocale"]);
                 string isPhantom = GetAttribute(node.Attributes["toc:IsPhantom"]);
 
-                if (isPhantom != "true" && 
+                if (isPhantom != "true" &&
                     title != "@PhantomNode" &&
                     title != "@NoTitle" &&
                     string.IsNullOrEmpty(title) != true &&
-                    string.IsNullOrEmpty(target) != true)
-                {
+                    string.IsNullOrEmpty(target) != true) {
                     TreeNode treeNode = tnCollection.Add(title);
 
                     MtpsNode mtpsNode = new MtpsNode(subTree, subTreeLocale, subTreeVersion,
@@ -165,16 +155,14 @@ namespace PackageThis
                     treeNode.Tag = mtpsNode;
 
                     // Mark nodes red that point outside this server
-                    if (mtpsNode.external == true)
-                    {
+                    if (mtpsNode.external == true) {
                         treeNode.ForeColor = System.Drawing.Color.Red;
 
                         //treeNode.NodeFont = new System.Drawing.Font(tocControl.Font, System.Drawing.FontStyle.Italic);
                     }
 
 
-                    if (subTree != null)
-                    {
+                    if (subTree != null) {
                         // Add a + as the title so any node with subnodes is expandable.
                         // Only load the subnodes when user expands this node.
                         // We rely on Tag == null rather than Text == "+" in case
@@ -183,15 +171,13 @@ namespace PackageThis
 
                     }
                 }
-                else
-                {
-                    if (subTree != null)
-                    {
+                else {
+                    if (subTree != null) {
                         // TODO: add a ContentItem constructor that takes a combined 
                         // version string: MSDN.10, Office.12, etc.
 
-                        string[] splitVersion = subTreeVersion.Split(new char[] {'.'});
-                        ContentItem childContentItem = new ContentItem(subTree, subTreeLocale, 
+                        string[] splitVersion = subTreeVersion.Split(new char[] { '.' });
+                        ContentItem childContentItem = new ContentItem(subTree, subTreeLocale,
                             splitVersion[1], splitVersion[0], application);
                         childContentItem.Load(false);
 
@@ -204,50 +190,43 @@ namespace PackageThis
 
 
 
-        private string GetAttribute(XmlAttribute attribute)
-        {
+        private string GetAttribute(XmlAttribute attribute) {
             return (attribute == null ? null : attribute.Value);
         }
 
-        public void ExpandNode(TreeNode node)
-        {
-            if (node.Nodes[0].Tag == null)
-            {
+        public void ExpandNode(TreeNode node) {
+            if (node.Nodes[0].Tag == null) {
                 ContentItem contentItem;
                 MtpsNode mtpsNode = node.Tag as MtpsNode;
 
-                try
-                {
+                try {
                     contentItem = lookupTOCNode(mtpsNode.navAssetId, mtpsNode.navLocale,
                         mtpsNode.navVersion);
                     processNodeList(contentItem, node.Nodes);
- 
+
                 }
-                catch
-                {
-//                    mtpsNode.external = true;
-//                    node.ForeColor = System.Drawing.Color.Red;
+                catch {
+                    //                    mtpsNode.external = true;
+                    //                    node.ForeColor = System.Drawing.Color.Red;
                 }
-                
+
                 node.Nodes.Remove(node.Nodes[0]); // This removes the node labeled "+"
 
             }
         }
 
-        public void UncheckNodes(TreeNode node)
-        {
+        public void UncheckNodes(TreeNode node) {
 
             // Events are created even if the checked state doesn't change.
             // That confuses the event handler because it assumes that the
             // event is only fired on a state change.
 
 
-            if(node.Checked == true)
+            if (node.Checked == true)
                 node.Checked = false;
 
-            foreach (TreeNode currentNode in node.Nodes)
-            {
-                if(currentNode.Checked == true)
+            foreach (TreeNode currentNode in node.Nodes) {
+                if (currentNode.Checked == true)
                     currentNode.Checked = false;
 
                 if (currentNode.Nodes != null)
@@ -256,29 +235,25 @@ namespace PackageThis
         }
 
 
-        public bool WriteContent(TreeNode node, Content contentDataSet)
-        {
+        public bool WriteContent(TreeNode node, Content contentDataSet) {
             DataRow row;
             MtpsNode mtpsNode = node.Tag as MtpsNode;
-            
-            string[] splitVersion = mtpsNode.targetVersion.Split(new char[] {'.'});
-            
+
+            string[] splitVersion = mtpsNode.targetVersion.Split(new char[] { '.' });
+
             ContentItem contentItem = new ContentItem("AssetId:" + mtpsNode.targetAssetId, mtpsNode.targetLocale,
                 splitVersion[1], splitVersion[0], application);
 
-            try
-            {
+            try {
                 contentItem.Load(true);
             }
-                
-            catch
-            {
+
+            catch {
                 node.ForeColor = System.Drawing.Color.Red;
                 return false; // tell the event handler to reject the click.
             }
 
-            if (contentDataSet.Tables["Item"].Rows.Find(mtpsNode.targetAssetId) == null)
-            {
+            if (contentDataSet.Tables["Item"].Rows.Find(mtpsNode.targetAssetId) == null) {
                 row = contentDataSet.Tables["Item"].NewRow();
                 row["ContentId"] = contentItem.contentId;
                 row["Title"] = mtpsNode.title;
@@ -291,23 +266,20 @@ namespace PackageThis
 
                 contentDataSet.Tables["Item"].Rows.Add(row);
             }
-            if (contentDataSet.Tables["ItemInstance"].Rows.Find(node.FullPath) == null)
-            {
+            if (contentDataSet.Tables["ItemInstance"].Rows.Find(node.FullPath) == null) {
                 row = contentDataSet.Tables["ItemInstance"].NewRow();
                 row["ContentId"] = contentItem.contentId;
                 row["FullPath"] = node.FullPath;
                 contentDataSet.Tables["ItemInstance"].Rows.Add(row);
             }
-            foreach (string imageFilename in contentItem.ImageFilenames)
-            {
+            foreach (string imageFilename in contentItem.ImageFilenames) {
                 row = contentDataSet.Tables["Picture"].NewRow();
                 row["ContentId"] = contentItem.contentId;
                 row["Filename"] = imageFilename;
             }
 
 
-            if (string.IsNullOrEmpty(contentItem.links) == false)
-            {
+            if (string.IsNullOrEmpty(contentItem.links) == false) {
                 XmlDocument linkDoc = new XmlDocument();
                 XmlNamespaceManager nsm = new XmlNamespaceManager(linkDoc.NameTable);
                 nsm.AddNamespace("k", "urn:mtpg-com:mtps/2004/1/key");
@@ -317,8 +289,7 @@ namespace PackageThis
 
                 XmlNodeList nodes = linkDoc.SelectNodes("//mtps:link", nsm);
 
-                foreach (XmlNode xmlNode in nodes)
-                {
+                foreach (XmlNode xmlNode in nodes) {
                     XmlNode assetIdNode = xmlNode.SelectSingleNode("mtps:assetId", nsm);
                     XmlNode contentIdNode = xmlNode.SelectSingleNode("k:contentId", nsm);
 
@@ -328,13 +299,11 @@ namespace PackageThis
                     string assetId = assetIdNode.InnerText;
                     string contentId = contentIdNode.InnerText;
 
-                    if (string.IsNullOrEmpty(assetId) == false)
-                    {
+                    if (string.IsNullOrEmpty(assetId) == false) {
                         // Remove "assetId:" from front
                         assetId = HttpUtility.UrlDecode(assetIdNode.InnerText.Remove(0, "assetId:".Length));
 
-                        if (links.ContainsKey(assetId) == false)
-                        {
+                        if (links.ContainsKey(assetId) == false) {
                             links.Add(assetId, contentId);
                         }
                     }
@@ -345,28 +314,24 @@ namespace PackageThis
 
             return true;
 
-            
+
         }
 
-        public void RemoveContent(TreeNode node, Content contentDataSet)
-        {
-            if (node.Tag != null)
-            {
+        public void RemoveContent(TreeNode node, Content contentDataSet) {
+            if (node.Tag != null) {
                 MtpsNode mtpsNode = node.Tag as MtpsNode;
 
                 DataRow row = contentDataSet.Tables["ItemInstance"].Rows.Find(node.FullPath);
 
-                if (row != null)
-                {
+                if (row != null) {
                     DataRow parentRow = row.GetParentRow("FK_Item_ItemInstance");
                     contentDataSet.Tables["ItemInstance"].Rows.Remove(row);
                     int count = parentRow.GetChildRows("FK_Item_ItemInstance").Length;
 
                     if (count == 0) // If there are no refs to this item, delete it and its files
                     {
-                        foreach (string file in Directory.GetFiles(rawDir, 
-                            parentRow["ContentId"].ToString() + "*"))
-                        {
+                        foreach (string file in Directory.GetFiles(rawDir,
+                            parentRow["ContentId"].ToString() + "*")) {
                             File.Delete(file);
                         }
                         contentDataSet.Tables["Item"].Rows.Remove(parentRow);
@@ -377,8 +342,7 @@ namespace PackageThis
             }
         }
 
-        public void CreateChm(string chmFile, string title, string locale, Content contentDataSet)
-        {
+        public void CreateChm(string chmFile, string title, string locale, Content contentDataSet) {
             Chm chm = new Chm(workingDir, title,
                 chmFile, locale, tocControl.Nodes, contentDataSet, links);
 
@@ -390,29 +354,24 @@ namespace PackageThis
 
         }
 
-        public void CreateHxs(string hxsFile, string title, string copyright, string locale, 
-            Content contentDataSet)
-        {
-            if (Directory.Exists(hxsDir) == true)
-            {
+        public void CreateHxs(string hxsFile, string title, string copyright, string locale,
+            Content contentDataSet) {
+            if (Directory.Exists(hxsDir) == true) {
                 Directory.Delete(hxsDir, true);
             }
 
             Directory.CreateDirectory(hxsDir);
             Directory.CreateDirectory(withinHxsDir);
 
-            foreach (string file in Directory.GetFiles(rawDir))
-            {
+            foreach (string file in Directory.GetFiles(rawDir)) {
                 File.Copy(file, Path.Combine(withinHxsDir, Path.GetFileName(file)), true);
             }
-            
+
             // This will be used as a base name for forming all of the MSHelp files.
             string baseFilename = Path.GetFileNameWithoutExtension(hxsFile);
 
-            foreach (DataRow row in contentDataSet.Tables["Item"].Rows)
-            {
-                if (Int32.Parse(row["Size"].ToString()) != 0)
-                {
+            foreach (DataRow row in contentDataSet.Tables["Item"].Rows) {
+                if (Int32.Parse(row["Size"].ToString()) != 0) {
                     Transform(row["ContentId"].ToString(),
                         row["Metadata"].ToString(),
                         row["Annotations"].ToString(),
@@ -427,7 +386,7 @@ namespace PackageThis
             CreateHxt(tocControl.Nodes, hxt, contentDataSet);
             hxt.Close();
 
-            
+
             CreateHxks(baseFilename);
 
             WriteExtraFiles();
@@ -436,8 +395,7 @@ namespace PackageThis
 
             string[] files = Directory.GetFiles(hxsDir, "*", SearchOption.AllDirectories);
 
-            foreach(string file in files)
-            {
+            foreach (string file in files) {
                 hxf.WriteLine(file.Replace(hxsDir, ""));
             }
 
@@ -455,7 +413,7 @@ namespace PackageThis
             // Actual equation is numInfoLines = 2*numHtmlFiles + (numFiles - numHtmlFiles) + 6
             // After factoring, we get this equation
             int expectedLines = numHtmlFiles + numFiles + 6;
-            
+
             Hxs hxs = new Hxs(Path.Combine(Path.GetFullPath(hxsDir), baseFilename + ".hxc"),
                 Path.GetFullPath(hxsDir),
                 Path.GetFullPath(hxsFile));
@@ -467,14 +425,11 @@ namespace PackageThis
 
 
         }
-        public void CreateHxt(TreeNodeCollection nodeCollection, Hxt hxt, Content contentDataSet)
-        {
+        public void CreateHxt(TreeNodeCollection nodeCollection, Hxt hxt, Content contentDataSet) {
             bool opened = false; // Keep track of opening or closing of TOC entries in the .hxt
 
-            foreach (TreeNode node in nodeCollection)
-            {
-                if (node.Checked == true)
-                {
+            foreach (TreeNode node in nodeCollection) {
+                if (node.Checked == true) {
                     MtpsNode mtpsNode = node.Tag as MtpsNode;
 
                     DataRow row = contentDataSet.Tables["Item"].Rows.Find(mtpsNode.targetAssetId);
@@ -485,18 +440,16 @@ namespace PackageThis
                     else
                         Url = Path.Combine(hxsSubDir,
                             row["ContentId"].ToString() + ".htm");
-                    
+
 
                     hxt.WriteStartNode(mtpsNode.title, Url);
-                        
+
                     opened = true;
                 }
-                if (node.Nodes.Count != 0 || node.Tag != null)
-                {
-                   CreateHxt(node.Nodes, hxt, contentDataSet);
+                if (node.Nodes.Count != 0 || node.Tag != null) {
+                    CreateHxt(node.Nodes, hxt, contentDataSet);
                 }
-                if (opened)
-                {
+                if (opened) {
                     opened = false;
                     hxt.WriteEndNode();
                 }
@@ -504,9 +457,8 @@ namespace PackageThis
 
         }
 
-        void CreateHxks(string baseFileName)
-        {
-            
+        void CreateHxks(string baseFileName) {
+
             Hxk hxk = new Hxk(baseFileName, "A", hxsDir);
             hxk = new Hxk(baseFileName, "B", hxsDir);
             hxk = new Hxk(baseFileName, "F", hxsDir);
@@ -514,10 +466,9 @@ namespace PackageThis
             hxk = new Hxk(baseFileName, "N", hxsDir);
             hxk = new Hxk(baseFileName, "S", hxsDir);
         }
-        
+
         // Includes stoplist and stylesheet
-        void WriteExtraFiles()
-        {
+        void WriteExtraFiles() {
             WriteExtraFile("Classic.css");
 
             // TODO: Locate stop lists for other locales and add them to the project.
@@ -530,8 +481,7 @@ namespace PackageThis
 
         }
 
-        void WriteExtraFile(string filename)
-        {
+        void WriteExtraFile(string filename) {
             Stream resourceStream;
 
             resourceStream = typeof(Program).Assembly.GetManifestResourceStream(
@@ -542,8 +492,7 @@ namespace PackageThis
 
             int b;
 
-            while ((b = resourceStream.ReadByte()) != -1)
-            {
+            while ((b = resourceStream.ReadByte()) != -1) {
                 fs.WriteByte((byte)b);
             }
 
@@ -552,8 +501,7 @@ namespace PackageThis
         }
 
         public void Transform(string contentId, string metadataXml, string annotationsXml,
-            string versionId, Content contentDataSet)
-        {
+            string versionId, Content contentDataSet) {
             XsltArgumentList arguments = new XsltArgumentList();
             Link link = new Link(contentDataSet, links);
             XmlDocument metadata = new XmlDocument();
@@ -578,15 +526,12 @@ namespace PackageThis
             TextReader tr = new StringReader(xml);
             XmlReader xr = XmlReader.Create(tr);
 
-            using (StreamWriter sw = new StreamWriter(filename, false, Encoding.UTF8))
-            {
-                try
-                {
+            using (StreamWriter sw = new StreamWriter(filename, false, Encoding.UTF8)) {
+                try {
                     xform.Transform(xr, arguments, sw);
 
                 }
-                catch (Exception ex)
-                {
+                catch (Exception ex) {
                     return;
                 }
             }

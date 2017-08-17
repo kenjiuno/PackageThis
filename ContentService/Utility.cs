@@ -7,33 +7,28 @@ using System.Text;
 using PackageThis.com.microsoft.msdn.services;
 
 
-namespace ContentServiceLibrary
-{
-    static public class Utility
-    {
+namespace ContentServiceLibrary {
+    static public class Utility {
         // Use the standard root node to get a list of locales available.
-        static public SortedDictionary<string, string> GetLocales()
-        {
+        static public SortedDictionary<string, string> GetLocales() {
             SortedDictionary<string, string> locales = new SortedDictionary<string, string>();
             getContentRequest request = new getContentRequest();
             ContentService proxy = new ContentService();
             getContentResponse response;
+            MyCacheImpl myCache = new MyCacheImpl();
 
             request.contentIdentifier = rootContentItem.contentId;
             request.locale = "en-US"; // Now required otherwise an exception.
 
-            try
-            {
+            try {
                 response = proxy.GetContent(request);
             }
-            catch
-            {
+            catch {
                 locales.Add("English (United States)", "en-us");
                 return locales;
             }
 
-            foreach (availableVersionAndLocale av in response.availableVersionsAndLocales)
-            {
+            foreach (availableVersionAndLocale av in response.availableVersionsAndLocales) {
                 // Use the DisplayName as the key instead of the locale because
                 // that's how we want the collection sorted.
                 string displayName = new CultureInfo(av.locale).DisplayName;

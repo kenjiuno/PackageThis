@@ -8,52 +8,44 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Web.Services;
 using PackageThis.com.microsoft.msdn.services;
+using System.Web;
 
-namespace ContentServiceLibrary
-{
-        
-        
-        static public class rootContentItem
-        {
+namespace ContentServiceLibrary {
 
-            static public readonly List<string> libraries = 
-                new List<string> ( new string[]{ "MSDN Library", "TechNet Library" });
 
-            static private string[] contentIds = { "ms310241", "Bb126093" };
-            static private string[] versions = { "MSDN.10", "TechNet.10" };
+    static public class rootContentItem {
 
-            static public int currentLibrary = 0;
+        static public readonly List<string> libraries =
+            new List<string>(new string[] { "MSDN Library", "TechNet Library" });
 
-            static public string contentId
-            {
-                get
-                {
-                    return contentIds[currentLibrary];
-                }
+        static private string[] contentIds = { "ms310241", "Bb126093" };
+        static private string[] versions = { "MSDN.10", "TechNet.10" };
+
+        static public int currentLibrary = 0;
+
+        static public string contentId {
+            get {
+                return contentIds[currentLibrary];
             }
+        }
 
-            static public string version
-            {
-                get
-                {
-                    return versions[currentLibrary];
-                }
+        static public string version {
+            get {
+                return versions[currentLibrary];
             }
+        }
 
-            static public string name
-            {
-                get
-                {
-                    return libraries[currentLibrary];
-                }
+        static public string name {
+            get {
+                return libraries[currentLibrary];
             }
-
-            
         }
 
 
-    public class ContentItem
-    {
+    }
+
+
+    public class ContentItem {
         public string xml;
         public string metadata;
         public string annotations;
@@ -77,9 +69,8 @@ namespace ContentServiceLibrary
         static Regex validateAsFilename = new Regex(@"^[-\w.]+$");
 
 
-        public ContentItem(string contentIdentifier, string locale, 
-            string version, string collection, string application)
-        {
+        public ContentItem(string contentIdentifier, string locale,
+            string version, string collection, string application) {
             this.contentIdentifier = contentIdentifier;
             this.locale = locale;
             this.version = version;
@@ -87,18 +78,14 @@ namespace ContentServiceLibrary
             this.application = application;
         }
 
-        public ContentItem(string contentIdentifier)
-        {
+        public ContentItem(string contentIdentifier) {
             this.contentIdentifier = contentIdentifier;
         }
 
         // Iterator to return filenames in the format required by the xhtml.
-        public IEnumerable ImageFilenames
-        {
-            get
-            {
-                for (int i = 0; i < images.Count; i++)
-                {
+        public IEnumerable ImageFilenames {
+            get {
+                for (int i = 0; i < images.Count; i++) {
                     if (images[i].data == null)
                         continue;
 
@@ -107,14 +94,12 @@ namespace ContentServiceLibrary
             }
         }
 
-        public void Load(bool loadImages)
-        {
+        public void Load(bool loadImages) {
             Load(loadImages, true);
         }
 
         // Added the loadFailSafe optimization
-        public void Load(bool loadImages, bool loadFailSafe)
-        {
+        public void Load(bool loadImages, bool loadFailSafe) {
 
             getContentRequest request = new getContentRequest();
 
@@ -145,8 +130,7 @@ namespace ContentServiceLibrary
             document.selector = "Mtps.Annotations";
             documents.Add(document);
 
-            if (loadFailSafe == true)
-            {
+            if (loadFailSafe == true) {
                 document = new requestedDocument();
                 document.type = documentTypes.primary;
                 document.selector = "Mtps.Failsafe";
@@ -162,33 +146,28 @@ namespace ContentServiceLibrary
 
             getContentResponse response;
 
-            try
-            {
-                response = proxy.GetContent(request);
+            try {
+                response = MyCacheImpl.GetContentOr(request, delegate () {
+                    return proxy.GetContent(request);
+                });
             }
-            catch
-            {
+            catch {
                 return;
             }
 
-            if (validateAsFilename.Match(response.contentId).Success == true)
-            {
+            if (validateAsFilename.Match(response.contentId).Success == true) {
                 contentId = response.contentId;
             }
-            else
-            {
+            else {
                 throw (new BadContentIdException("ContentId contains illegal characters: [" + contentId + "]"));
             }
-            
-            numImages = response.imageDocuments.Length;
-            
 
-            foreach (common commonDoc in response.commonDocuments)
-            {
-                if (commonDoc.Any != null)
-                {
-                    switch (commonDoc.commonFormat.ToLower())
-                    {
+            numImages = response.imageDocuments.Length;
+
+
+            foreach (common commonDoc in response.commonDocuments) {
+                if (commonDoc.Any != null) {
+                    switch (commonDoc.commonFormat.ToLower()) {
                         case "mtps.search":
                             metadata = commonDoc.Any[0].OuterXml;
                             break;
@@ -201,12 +180,9 @@ namespace ContentServiceLibrary
                 }
             }
 
-            foreach (primary primaryDoc in response.primaryDocuments)
-            {
-                if (primaryDoc.Any != null)
-                {
-                    switch (primaryDoc.primaryFormat.ToLower())
-                    {
+            foreach (primary primaryDoc in response.primaryDocuments) {
+                if (primaryDoc.Any != null) {
+                    switch (primaryDoc.primaryFormat.ToLower()) {
                         case "mtps.failsafe":
                             xml = primaryDoc.Any.OuterXml;
                             break;
@@ -219,12 +195,9 @@ namespace ContentServiceLibrary
             }
 
 
-            foreach (feature featureDoc in response.featureDocuments)
-            {
-                if (featureDoc.Any != null)
-                {
-                    if (featureDoc.featureFormat.ToLower() == "mtps.annotations")
-                    {
+            foreach (feature featureDoc in response.featureDocuments) {
+                if (featureDoc.Any != null) {
+                    if (featureDoc.featureFormat.ToLower() == "mtps.annotations") {
                         annotations = featureDoc.Any[0].OuterXml;
                     }
                 }
@@ -239,13 +212,11 @@ namespace ContentServiceLibrary
                 annotations = "<an:annotations xmlns:an=\"urn:mtpg-com:mtps/2007/1/annotations\" />";
 
 
-            if (loadImages == true)
-            {
+            if (loadImages == true) {
                 requestedDocument[] imageDocs = new requestedDocument[response.imageDocuments.Length];
 
                 // Now that we know their names, we run a request with each image.
-                for (int i = 0; i < response.imageDocuments.Length; i++)
-                {
+                for (int i = 0; i < response.imageDocuments.Length; i++) {
                     imageDocs[i] = new requestedDocument();
                     imageDocs[i].type = documentTypes.image;
                     imageDocs[i].selector = response.imageDocuments[i].name + "." +
@@ -255,16 +226,13 @@ namespace ContentServiceLibrary
                 request.requestedDocuments = imageDocs;
                 response = proxy.GetContent(request);
 
-                foreach (image imageDoc in response.imageDocuments)
-                {
+                foreach (image imageDoc in response.imageDocuments) {
                     string imageFilename = imageDoc.name + "." + imageDoc.imageFormat;
-                    if (validateAsFilename.Match(imageFilename).Success == true)
-                    {
+                    if (validateAsFilename.Match(imageFilename).Success == true) {
                         images.Add(new Image(imageDoc.name, imageDoc.imageFormat, imageDoc.Value));
 
                     }
-                    else
-                    {
+                    else {
                         throw (new BadImageNameExeception(
                             "Image filename contains illegal characters: [" + imageFilename + "]"));
                     }
@@ -277,8 +245,7 @@ namespace ContentServiceLibrary
         // Returns the navigation node that corresponds to this content. If
         // we give it a navigation node already, it'll return that node, so
         // no harm done.
-        public string GetNavigationNode()
-        {
+        public string GetNavigationNode() {
             // Load the contentItem. If we get a Toc entry, then we know it is
             // a navigation node rather than a content node. The reason is that
             // getNavigationPaths only returns the root node if the target node is
@@ -288,8 +255,8 @@ namespace ContentServiceLibrary
             // only be called once with the rootNode.
 
             this.Load(false); // Don't load images in case we are a content node.
-            
-            if(toc != null)
+
+            if (toc != null)
                 return contentId;
 
             navigationKey root = new navigationKey();
@@ -298,7 +265,7 @@ namespace ContentServiceLibrary
             root.version = rootContentItem.version;
 
             navigationKey target = new navigationKey();
-//            target.contentId = "AssetId:" + assetId;
+            //            target.contentId = "AssetId:" + assetId;
             target.contentId = contentId;
             target.locale = locale;
             target.version = collection + "." + version;
@@ -316,28 +283,23 @@ namespace ContentServiceLibrary
                 return null;
 
             // This is the last node in the first path.
-           return response.navigationPaths[0].navigationPathNodes[
-                response.navigationPaths[0].navigationPathNodes.Length - 1].navigationNodeKey.contentId;
-           
+            return response.navigationPaths[0].navigationPathNodes[
+                 response.navigationPaths[0].navigationPathNodes.Length - 1].navigationNodeKey.contentId;
+
         }
 
-        public void Write(string directory)
-        {
+        public void Write(string directory) {
             Write(directory, contentId + ".htm");
         }
 
-        public void Write(string directory, string filename)
-        {
-            if (xml != null)
-            {
-                using (StreamWriter sw = new StreamWriter(Path.Combine(directory, filename)))
-                {
+        public void Write(string directory, string filename) {
+            if (xml != null) {
+                using (StreamWriter sw = new StreamWriter(Path.Combine(directory, filename))) {
                     sw.Write(xml);
 
                 }
 
-                foreach (Image image in images)
-                {
+                foreach (Image image in images) {
 
                     if (image.data == null)
                         continue;
@@ -345,8 +307,7 @@ namespace ContentServiceLibrary
                     string imageFilename = GetImageFilename(image);
 
                     using (BinaryWriter bw = new BinaryWriter(File.Open(Path.Combine(directory, imageFilename),
-                        FileMode.Create)))
-                    {
+                        FileMode.Create))) {
 
                         bw.Write(image.data, 0, image.data.Length);
                     }
@@ -356,26 +317,21 @@ namespace ContentServiceLibrary
 
         }
 
-        private string GetImageFilename(Image image)
-        {
+        private string GetImageFilename(Image image) {
             return contentId + "." + image.name + "(" + locale +
                  "," + collection + "." + version + ")." + image.imageFormat;
 
         }
     }
 
-    public class BadContentIdException : ApplicationException
-    {
-        public BadContentIdException(string message) : base(message)
-        {
+    public class BadContentIdException : ApplicationException {
+        public BadContentIdException(string message) : base(message) {
         }
 
     }
 
-    public class BadImageNameExeception : ApplicationException
-    {
-        public BadImageNameExeception(string message) : base(message)
-        {
+    public class BadImageNameExeception : ApplicationException {
+        public BadImageNameExeception(string message) : base(message) {
         }
     }
 }
