@@ -34,7 +34,7 @@ namespace PackageThis
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.loadToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.exportToHxsFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -60,6 +60,7 @@ namespace PackageThis
             this.ContentDataSet = new PackageThis.Content();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
+            this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -88,7 +89,7 @@ namespace PackageThis
             // fileToolStripMenuItem
             // 
             this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripMenuItem1,
+            this.loadToolStripMenuItem,
             this.saveToolStripMenuItem,
             this.toolStripSeparator1,
             this.exportToHxsFileToolStripMenuItem,
@@ -99,12 +100,12 @@ namespace PackageThis
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(50, 29);
             this.fileToolStripMenuItem.Text = "&File";
             // 
-            // toolStripMenuItem1
+            // loadToolStripMenuItem
             // 
-            this.toolStripMenuItem1.Enabled = false;
-            this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(290, 30);
-            this.toolStripMenuItem1.Text = "Load Selections...";
+            this.loadToolStripMenuItem.Name = "loadToolStripMenuItem";
+            this.loadToolStripMenuItem.Size = new System.Drawing.Size(290, 30);
+            this.loadToolStripMenuItem.Text = "Load Selections...";
+            this.loadToolStripMenuItem.Click += new System.EventHandler(this.loadToolStripMenuItem_Click);
             // 
             // saveToolStripMenuItem
             // 
@@ -317,6 +318,11 @@ namespace PackageThis
             this.saveFileDialog1.DefaultExt = "xml";
             this.saveFileDialog1.Filter = "XML files|*.xml";
             // 
+            // openFileDialog1
+            // 
+            this.openFileDialog1.DefaultExt = "xml";
+            this.openFileDialog1.Filter = "XML files|*.xml";
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 18F);
@@ -372,10 +378,11 @@ namespace PackageThis
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
         private System.Windows.Forms.ContextMenuStrip TreeViewMenu;
         private System.Windows.Forms.ToolStripMenuItem selectSiblingNodesToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem1;
+        private System.Windows.Forms.ToolStripMenuItem loadToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem deselectThisNodeAndAllChildrenToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem2;
         private System.Windows.Forms.ToolStripMenuItem libraryToolStripMenuItem;
+        private System.Windows.Forms.OpenFileDialog openFileDialog1;
     }
 }
 

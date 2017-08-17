@@ -15,13 +15,14 @@ namespace ContentServiceLibrary {
             getContentRequest request = new getContentRequest();
             ContentService proxy = new ContentService();
             getContentResponse response;
-            MyCacheImpl myCache = new MyCacheImpl();
 
             request.contentIdentifier = rootContentItem.contentId;
             request.locale = "en-US"; // Now required otherwise an exception.
 
             try {
-                response = proxy.GetContent(request);
+                response = MyCacheImpl.GetContentOr(request, delegate () {
+                    return proxy.GetContent(request);
+                });
             }
             catch {
                 locales.Add("English (United States)", "en-us");

@@ -40,6 +40,9 @@ namespace PackageThis
 
         private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
+            if (e.Error != null) {
+                MessageBox.Show(e.Error.Message, "Compiler failure");
+            }
             this.Close();
             
         }

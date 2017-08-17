@@ -342,11 +342,13 @@ namespace PackageThis {
             }
         }
 
-        public void CreateChm(string chmFile, string title, string locale, Content contentDataSet) {
+        public void CreateChm(string chmFile, string title, string locale, Content contentDataSet, Encoding hhpEncoding) {
             Chm chm = new Chm(workingDir, title,
-                chmFile, locale, tocControl.Nodes, contentDataSet, links);
+                chmFile, locale, tocControl.Nodes, contentDataSet, links, hhpEncoding);
 
-            chm.Create();
+            using (var firstProgress = SimpleProgressForm.Display("Copying files")) {
+                chm.Create();
+            }
 
             ExportProgressForm progressForm = new ExportProgressForm(chm, chm.expectedLines);
 
@@ -356,72 +358,76 @@ namespace PackageThis {
 
         public void CreateHxs(string hxsFile, string title, string copyright, string locale,
             Content contentDataSet) {
-            if (Directory.Exists(hxsDir) == true) {
-                Directory.Delete(hxsDir, true);
-            }
+            using (var firstProgress = SimpleProgressForm.Display("Copying files")) {
 
-            Directory.CreateDirectory(hxsDir);
-            Directory.CreateDirectory(withinHxsDir);
-
-            foreach (string file in Directory.GetFiles(rawDir)) {
-                File.Copy(file, Path.Combine(withinHxsDir, Path.GetFileName(file)), true);
-            }
-
-            // This will be used as a base name for forming all of the MSHelp files.
-            string baseFilename = Path.GetFileNameWithoutExtension(hxsFile);
-
-            foreach (DataRow row in contentDataSet.Tables["Item"].Rows) {
-                if (Int32.Parse(row["Size"].ToString()) != 0) {
-                    Transform(row["ContentId"].ToString(),
-                        row["Metadata"].ToString(),
-                        row["Annotations"].ToString(),
-                        row["VersionId"].ToString(),
-                        contentDataSet);
+                if (Directory.Exists(hxsDir) == true) {
+                    Directory.Delete(hxsDir, true);
                 }
+
+                Directory.CreateDirectory(hxsDir);
+                Directory.CreateDirectory(withinHxsDir);
+
+                foreach (string file in Directory.GetFiles(rawDir)) {
+                    File.Copy(file, Path.Combine(withinHxsDir, Path.GetFileName(file)), true);
+                }
+
+                // This will be used as a base name for forming all of the MSHelp files.
+                string baseFilename = Path.GetFileNameWithoutExtension(hxsFile);
+
+                foreach (DataRow row in contentDataSet.Tables["Item"].Rows) {
+                    if (Int32.Parse(row["Size"].ToString()) != 0) {
+                        Transform(row["ContentId"].ToString(),
+                            row["Metadata"].ToString(),
+                            row["Annotations"].ToString(),
+                            row["VersionId"].ToString(),
+                            contentDataSet);
+                    }
+                }
+
+
+                // Create TOC
+                Hxt hxt = new Hxt(Path.Combine(hxsDir, baseFilename + ".hxt"), Encoding.UTF8);
+                CreateHxt(tocControl.Nodes, hxt, contentDataSet);
+                hxt.Close();
+
+
+                CreateHxks(baseFilename);
+
+                WriteExtraFiles();
+
+                Hxf hxf = new Hxf(Path.Combine(hxsDir, baseFilename + ".hxf"), Encoding.UTF8);
+
+                string[] files = Directory.GetFiles(hxsDir, "*", SearchOption.AllDirectories);
+
+                foreach (string file in files) {
+                    hxf.WriteLine(file.Replace(hxsDir, ""));
+                }
+
+                hxf.Close();
+
+                string lcid = new CultureInfo(locale).LCID.ToString();
+                Hxc hxc = new Hxc(baseFilename, title, lcid, "1.0", copyright, hxsDir, Encoding.UTF8);
+
+                int numHtmlFiles = Directory.GetFiles(hxsDir, "*.htm", SearchOption.AllDirectories).Length;
+                int numFiles = Directory.GetFiles(hxsDir, "*", SearchOption.AllDirectories).Length;
+
+                // This gives the number of information lines output by the compiler. It
+                // was determined experimentally, and should give some means of making an
+                // accurate progress bar during a compile.
+                // Actual equation is numInfoLines = 2*numHtmlFiles + (numFiles - numHtmlFiles) + 6
+                // After factoring, we get this equation
+                int expectedLines = numHtmlFiles + numFiles + 6;
+
+                Hxs hxs = new Hxs(Path.Combine(Path.GetFullPath(hxsDir), baseFilename + ".hxc"),
+                    Path.GetFullPath(hxsDir),
+                    Path.GetFullPath(hxsFile));
+
+                firstProgress.Close();
+
+                ExportProgressForm hxsProgressForm = new ExportProgressForm(hxs, expectedLines);
+
+                hxsProgressForm.ShowDialog();
             }
-
-
-            // Create TOC
-            Hxt hxt = new Hxt(Path.Combine(hxsDir, baseFilename + ".hxt"), Encoding.UTF8);
-            CreateHxt(tocControl.Nodes, hxt, contentDataSet);
-            hxt.Close();
-
-
-            CreateHxks(baseFilename);
-
-            WriteExtraFiles();
-
-            Hxf hxf = new Hxf(Path.Combine(hxsDir, baseFilename + ".hxf"), Encoding.UTF8);
-
-            string[] files = Directory.GetFiles(hxsDir, "*", SearchOption.AllDirectories);
-
-            foreach (string file in files) {
-                hxf.WriteLine(file.Replace(hxsDir, ""));
-            }
-
-            hxf.Close();
-
-            string lcid = new CultureInfo(locale).LCID.ToString();
-            Hxc hxc = new Hxc(baseFilename, title, lcid, "1.0", copyright, hxsDir, Encoding.UTF8);
-
-            int numHtmlFiles = Directory.GetFiles(hxsDir, "*.htm", SearchOption.AllDirectories).Length;
-            int numFiles = Directory.GetFiles(hxsDir, "*", SearchOption.AllDirectories).Length;
-
-            // This gives the number of information lines output by the compiler. It
-            // was determined experimentally, and should give some means of making an
-            // accurate progress bar during a compile.
-            // Actual equation is numInfoLines = 2*numHtmlFiles + (numFiles - numHtmlFiles) + 6
-            // After factoring, we get this equation
-            int expectedLines = numHtmlFiles + numFiles + 6;
-
-            Hxs hxs = new Hxs(Path.Combine(Path.GetFullPath(hxsDir), baseFilename + ".hxc"),
-                Path.GetFullPath(hxsDir),
-                Path.GetFullPath(hxsFile));
-
-
-            ExportProgressForm hxsProgressForm = new ExportProgressForm(hxs, expectedLines);
-
-            hxsProgressForm.ShowDialog();
 
 
         }

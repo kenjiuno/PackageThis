@@ -40,9 +40,9 @@ namespace ContentServiceLibrary {
         private static string filePathOf(getContentRequest request) {
             return Path.Combine(
                 cacheDir,
-                HttpUtility.UrlEncode(request.version),
-                HttpUtility.UrlEncode(request.locale),
-                HttpUtility.UrlEncode(request.contentIdentifier)
+                HttpUtility.UrlEncode(request.version ?? "none"),
+                HttpUtility.UrlEncode(request.locale ?? "none"),
+                HttpUtility.UrlEncode(request.contentIdentifier ?? "none")
                 );
         }
     }

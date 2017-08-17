@@ -12,10 +12,8 @@ using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Xsl;
 
-namespace PackageThis
-{
-    class Chm : ICompilable
-    {
+namespace PackageThis {
+    class Chm : ICompilable {
         private string withinChmDir;
         private string rawDir;
         private string chmDir;
@@ -30,6 +28,7 @@ namespace PackageThis
         private Content contentDataSet;
         private TreeNodeCollection nodes;
         private Dictionary<string, string> links;
+        private Encoding hhpEncoding;
 
         private string defaultPage = null;
 
@@ -75,10 +74,8 @@ namespace PackageThis
         static private XmlReader transformFile = XmlReader.Create(resourceStream);
         static private XslCompiledTransform xform = null;
 
-
         public Chm(string workingDir, string title, string chmFile, string locale, TreeNodeCollection nodes,
-            Content contentDataSet, Dictionary<string, string> links)
-        {
+            Content contentDataSet, Dictionary<string, string> links, Encoding hhpEncoding) {
             this.workingDir = workingDir;
             this.title = title;
             this.chmFile = chmFile;
@@ -86,6 +83,7 @@ namespace PackageThis
             this.nodes = nodes;
             this.contentDataSet = contentDataSet;
             this.links = links;
+            this.hhpEncoding = hhpEncoding;
 
             this.rawDir = Path.Combine(workingDir, "raw");
             this.chmDir = Path.Combine(workingDir, "chm");
@@ -93,8 +91,7 @@ namespace PackageThis
 
             this.baseName = Path.GetFileNameWithoutExtension(chmFile);
 
-            if (xform == null)
-            {
+            if (xform == null) {
                 xform = new XslCompiledTransform(true);
                 xform.Load(transformFile);
             }
@@ -103,31 +100,26 @@ namespace PackageThis
         }
 
 
-        public void Create()
-        {
-            if (Directory.Exists(chmDir) == true)
-            {
+        public void Create() {
+            if (Directory.Exists(chmDir) == true) {
                 Directory.Delete(chmDir, true);
             }
 
             Directory.CreateDirectory(chmDir);
             Directory.CreateDirectory(withinChmDir);
 
-            foreach (string file in Directory.GetFiles(rawDir))
-            {
+            foreach (string file in Directory.GetFiles(rawDir)) {
                 File.Copy(file, Path.Combine(withinChmDir, Path.GetFileName(file)), true);
             }
 
             Hhk hhk = new Hhk(Path.Combine(chmDir, baseName + ".hhk"), locale);
 
-            foreach (DataRow row in contentDataSet.Tables["Item"].Rows)
-            {
-                if (Int32.Parse(row["Size"].ToString()) != 0)
-                {
+            foreach (DataRow row in contentDataSet.Tables["Item"].Rows) {
+                if (Int32.Parse(row["Size"].ToString()) != 0) {
                     Transform(row["ContentId"].ToString(),
                         row["Metadata"].ToString(),
                         row["Annotations"].ToString(),
-                        row["VersionId"].ToString(), 
+                        row["VersionId"].ToString(),
                         contentDataSet);
 
                     XmlDocument document = new XmlDocument();
@@ -140,10 +132,9 @@ namespace PackageThis
 
                     XmlNodeList xmlNodes = document.SelectNodes("//xhtml:meta[@name='MSHKeywordK']/@content", nsManager);
 
-                    foreach (XmlNode xmlNode in xmlNodes)
-                    {
-                        hhk.Add(xmlNode.InnerText, 
-                            Path.Combine(chmSubDir, row["ContentId"].ToString() + ".htm"), 
+                    foreach (XmlNode xmlNode in xmlNodes) {
+                        hhk.Add(xmlNode.InnerText,
+                            Path.Combine(chmSubDir, row["ContentId"].ToString() + ".htm"),
                             row["Title"].ToString());
                     }
                 }
@@ -152,7 +143,7 @@ namespace PackageThis
             hhk.Save();
 
             int lcid = new CultureInfo(locale).LCID;
-            
+
 
             // Create TOC
             Hhc hhc = new Hhc(Path.Combine(chmDir, baseName + ".hhc"), locale);
@@ -160,10 +151,8 @@ namespace PackageThis
             hhc.Close();
 
             using (FileStream fileStream = new FileStream(Path.Combine(chmDir, baseName + ".hhp"),
-                FileMode.Create, FileAccess.Write, FileShare.None))
-            {
-                using (StreamWriter streamWriter = new StreamWriter(fileStream))
-                {
+                FileMode.Create, FileAccess.Write, FileShare.None)) {
+                using (StreamWriter streamWriter = new StreamWriter(fileStream, hhpEncoding)) {
                     streamWriter.Write(template, chmFile, baseName, lcid, defaultPage, title);
                 }
             }
@@ -177,8 +166,7 @@ namespace PackageThis
 
         }
 
-        public void Compile(IProgressReporter progressReporter)
-        {
+        public void Compile(IProgressReporter progressReporter) {
             this.progressReporter = progressReporter;
 
             // Use registry to find the compiler and invoke as a separate process.
@@ -186,61 +174,59 @@ namespace PackageThis
 
             string install = (string)Registry.GetValue(key, "InstallDir", null);
 
-            if (install == null)
-            {
+            if (install == null) {
                 // TODO: throw this instead to decouple from winforms.
                 MessageBox.Show("You need to install the HTML Help Workshop.");
                 return;
             }
-            
-            
-            
+
+
+
             Process compileProcess = new Process();
 
             compileProcess.StartInfo.FileName = Path.Combine(install, "hhc.exe");
-            compileProcess.StartInfo.Arguments = baseName + ".hhp";
+            compileProcess.StartInfo.Arguments = "\"" + baseName + ".hhp" + "\"";
             compileProcess.StartInfo.CreateNoWindow = true;
             compileProcess.StartInfo.WorkingDirectory = chmDir;
             compileProcess.StartInfo.UseShellExecute = false;
             compileProcess.StartInfo.RedirectStandardOutput = true;
-//            compileProcess.OutputDataReceived += new DataReceivedEventHandler(CompilerOutputHandler);
+            //            compileProcess.OutputDataReceived += new DataReceivedEventHandler(CompilerOutputHandler);
 
-            
-            
+
+
             compileProcess.Start();
 
             StreamReader streamReader = compileProcess.StandardOutput;
 
-//            compileProcess.BeginOutputReadLine();
-//            compileProcess.WaitForExit();
+            //            compileProcess.BeginOutputReadLine();
+            //            compileProcess.WaitForExit();
 
-            string line;
+            progressReporter.ProgressMessage("Compiling");
 
-            // The UI doesn't update because stdout isn't flushed, so for now, just toss
-            // the message and call the progressReporter with the same
-            // message.
-            while(streamReader.EndOfStream != true)
-            {
-                line = streamReader.ReadLine();
+            String allStdOut = "";
+            System.Threading.ThreadPool.QueueUserWorkItem(
+                delegate {
+                    allStdOut = streamReader.ReadToEnd();
+                }, null
+            );
 
-                // if (String.IsNullOrEmpty(line) == false)
-                {
-                    progressReporter.ProgressMessage("Compiling");
-                }
-            }
+            compileProcess.WaitForExit();
+
+            var exitCode = compileProcess.ExitCode;
 
             compileProcess.Close();
 
+            // 1 is success
+            if (exitCode != 1) {
+                throw new ApplicationException(allStdOut);
+            }
         }
 
-        public void CreateHhc(TreeNodeCollection nodeCollection, Hhc hhc, Content contentDataSet)
-        {
+        public void CreateHhc(TreeNodeCollection nodeCollection, Hhc hhc, Content contentDataSet) {
             bool opened = false; // Keep track of opening or closing of TOC entries
 
-            foreach (TreeNode node in nodeCollection)
-            {
-                if (node.Checked == true)
-                {
+            foreach (TreeNode node in nodeCollection) {
+                if (node.Checked == true) {
                     MtpsNode mtpsNode = node.Tag as MtpsNode;
 
                     DataRow row = contentDataSet.Tables["Item"].Rows.Find(mtpsNode.targetAssetId);
@@ -248,14 +234,13 @@ namespace PackageThis
 
                     if (Int32.Parse(row["Size"].ToString()) == 0)
                         Url = null;
-                    else
-                    {
+                    else {
                         Url = Path.Combine(chmSubDir,
                             row["ContentId"].ToString() + ".htm");
-                        
+
                         // Save the first page we see in the TOC as the default page as required
                         // by the chm.
-                        if(defaultPage == null)
+                        if (defaultPage == null)
                             defaultPage = Url;
                     }
 
@@ -264,12 +249,10 @@ namespace PackageThis
 
                     opened = true;
                 }
-                if (node.Nodes.Count != 0 || node.Tag != null)
-                {
+                if (node.Nodes.Count != 0 || node.Tag != null) {
                     CreateHhc(node.Nodes, hhc, contentDataSet);
                 }
-                if (opened)
-                {
+                if (opened) {
                     opened = false;
                     hhc.WriteEndNode();
                 }
@@ -278,8 +261,7 @@ namespace PackageThis
         }
 
         public void Transform(string contentId, string metadataXml, string annotationsXml,
-            string versionId, Content contentDataSet)
-        {
+            string versionId, Content contentDataSet) {
             XsltArgumentList arguments = new XsltArgumentList();
             Link link = new Link(contentDataSet, links);
             XmlDocument metadata = new XmlDocument();
@@ -316,15 +298,12 @@ namespace PackageThis
             TextReader tr = new StringReader(xml);
             XmlReader xr = XmlReader.Create(tr);
 
-            using (StreamWriter sw = new StreamWriter(filename, false, encoding))
-            {
-                try
-                {
+            using (StreamWriter sw = new StreamWriter(filename, false, encoding)) {
+                try {
                     xform.Transform(xr, arguments, sw);
 
                 }
-                catch (Exception ex)
-                {
+                catch (Exception ex) {
                     return;
                 }
             }
@@ -333,20 +312,17 @@ namespace PackageThis
         }
 
 
-        private void CompilerOutputHandler(object sendingProcess, DataReceivedEventArgs message)
-        {
-            if (progressReporter != null)
-            {
+        private void CompilerOutputHandler(object sendingProcess, DataReceivedEventArgs message) {
+            if (progressReporter != null) {
                 progressReporter.ProgressMessage(message.Data);
-            } 
+            }
         }
 
 
         // TODO: Factor the following as they are very similar to the .hxs equiv.
 
         // Includes stoplist and stylesheet
-        void WriteExtraFiles()
-        {
+        void WriteExtraFiles() {
             WriteExtraFile("Classic.css");
 
             WriteExtraFile("green-left.jpg");
@@ -355,8 +331,7 @@ namespace PackageThis
 
         }
 
-        void WriteExtraFile(string filename)
-        {
+        void WriteExtraFile(string filename) {
             Stream resourceStream;
 
             resourceStream = typeof(Program).Assembly.GetManifestResourceStream(
@@ -368,8 +343,7 @@ namespace PackageThis
 
             int b;
 
-            while ((b = resourceStream.ReadByte()) != -1)
-            {
+            while ((b = resourceStream.ReadByte()) != -1) {
                 fs.WriteByte((byte)b);
             }
 

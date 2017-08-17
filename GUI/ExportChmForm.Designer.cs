@@ -30,6 +30,7 @@ namespace PackageThis
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.ChmFileTextBox = new System.Windows.Forms.TextBox();
@@ -38,49 +39,59 @@ namespace PackageThis
             this.OKBtn = new System.Windows.Forms.Button();
             this.CancelBtn = new System.Windows.Forms.Button();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
+            this.linkLabel1 = new System.Windows.Forms.LinkLabel();
+            this.linkUrl = new System.Windows.Forms.ToolTip(this.components);
+            this.label3 = new System.Windows.Forms.Label();
+            this.hhpEncoding = new System.Windows.Forms.ComboBox();
+            this.label4 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(12, 9);
+            this.label1.Location = new System.Drawing.Point(54, 12);
+            this.label1.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(50, 13);
+            this.label1.Size = new System.Drawing.Size(78, 18);
             this.label1.TabIndex = 0;
             this.label1.Text = "Chm File:";
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(32, 39);
+            this.label2.Location = new System.Drawing.Point(87, 54);
+            this.label2.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(30, 13);
-            this.label2.TabIndex = 1;
+            this.label2.Size = new System.Drawing.Size(46, 18);
+            this.label2.TabIndex = 3;
             this.label2.Text = "Title:";
             // 
             // ChmFileTextBox
             // 
-            this.ChmFileTextBox.Location = new System.Drawing.Point(68, 6);
+            this.ChmFileTextBox.Location = new System.Drawing.Point(147, 8);
+            this.ChmFileTextBox.Margin = new System.Windows.Forms.Padding(5, 4, 5, 4);
             this.ChmFileTextBox.Name = "ChmFileTextBox";
             this.ChmFileTextBox.ReadOnly = true;
-            this.ChmFileTextBox.Size = new System.Drawing.Size(387, 20);
-            this.ChmFileTextBox.TabIndex = 0;
+            this.ChmFileTextBox.Size = new System.Drawing.Size(642, 25);
+            this.ChmFileTextBox.TabIndex = 1;
             this.ChmFileTextBox.TextChanged += new System.EventHandler(this.textBox1_TextChanged);
             // 
             // TitleTextBox
             // 
-            this.TitleTextBox.Location = new System.Drawing.Point(68, 36);
+            this.TitleTextBox.Location = new System.Drawing.Point(147, 50);
+            this.TitleTextBox.Margin = new System.Windows.Forms.Padding(5, 4, 5, 4);
             this.TitleTextBox.Name = "TitleTextBox";
-            this.TitleTextBox.Size = new System.Drawing.Size(387, 20);
-            this.TitleTextBox.TabIndex = 2;
+            this.TitleTextBox.Size = new System.Drawing.Size(642, 25);
+            this.TitleTextBox.TabIndex = 4;
             this.TitleTextBox.TextChanged += new System.EventHandler(this.textBox1_TextChanged);
             // 
             // BrowseBtn
             // 
-            this.BrowseBtn.Location = new System.Drawing.Point(461, 4);
+            this.BrowseBtn.Location = new System.Drawing.Point(802, 6);
+            this.BrowseBtn.Margin = new System.Windows.Forms.Padding(5, 4, 5, 4);
             this.BrowseBtn.Name = "BrowseBtn";
-            this.BrowseBtn.Size = new System.Drawing.Size(75, 23);
-            this.BrowseBtn.TabIndex = 1;
+            this.BrowseBtn.Size = new System.Drawing.Size(125, 32);
+            this.BrowseBtn.TabIndex = 2;
             this.BrowseBtn.Text = "&Browse...";
             this.BrowseBtn.UseVisualStyleBackColor = true;
             this.BrowseBtn.Click += new System.EventHandler(this.BrowseBtn_Click);
@@ -89,20 +100,23 @@ namespace PackageThis
             // 
             this.OKBtn.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.OKBtn.Enabled = false;
-            this.OKBtn.Location = new System.Drawing.Point(183, 62);
+            this.OKBtn.Location = new System.Drawing.Point(322, 206);
+            this.OKBtn.Margin = new System.Windows.Forms.Padding(5, 4, 5, 4);
             this.OKBtn.Name = "OKBtn";
-            this.OKBtn.Size = new System.Drawing.Size(75, 23);
-            this.OKBtn.TabIndex = 3;
+            this.OKBtn.Size = new System.Drawing.Size(125, 32);
+            this.OKBtn.TabIndex = 8;
             this.OKBtn.Text = "OK";
             this.OKBtn.UseVisualStyleBackColor = true;
+            this.OKBtn.Click += new System.EventHandler(this.OKBtn_Click);
             // 
             // CancelBtn
             // 
             this.CancelBtn.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.CancelBtn.Location = new System.Drawing.Point(291, 62);
+            this.CancelBtn.Location = new System.Drawing.Point(502, 206);
+            this.CancelBtn.Margin = new System.Windows.Forms.Padding(5, 4, 5, 4);
             this.CancelBtn.Name = "CancelBtn";
-            this.CancelBtn.Size = new System.Drawing.Size(75, 23);
-            this.CancelBtn.TabIndex = 4;
+            this.CancelBtn.Size = new System.Drawing.Size(125, 32);
+            this.CancelBtn.TabIndex = 9;
             this.CancelBtn.Text = "Cancel";
             this.CancelBtn.UseVisualStyleBackColor = true;
             // 
@@ -111,13 +125,58 @@ namespace PackageThis
             this.saveFileDialog1.DefaultExt = "chm";
             this.saveFileDialog1.Filter = "Chm files|*.chm";
             // 
+            // linkLabel1
+            // 
+            this.linkLabel1.AutoSize = true;
+            this.linkLabel1.Location = new System.Drawing.Point(144, 261);
+            this.linkLabel1.Name = "linkLabel1";
+            this.linkLabel1.Size = new System.Drawing.Size(253, 18);
+            this.linkLabel1.TabIndex = 10;
+            this.linkLabel1.TabStop = true;
+            this.linkLabel1.Text = "Microsoft HTML Help Downloads";
+            this.linkUrl.SetToolTip(this.linkLabel1, "https://msdn.microsoft.com/ja-jp/library/windows/desktop/ms669985%28v=vs.85%29.as" +
+        "px?f=255&MSPPError=-2147217396");
+            this.linkLabel1.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabel1_LinkClicked);
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(10, 93);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(122, 18);
+            this.label3.TabIndex = 5;
+            this.label3.Text = ".HHP encoding:";
+            // 
+            // hhpEncoding
+            // 
+            this.hhpEncoding.FormattingEnabled = true;
+            this.hhpEncoding.Location = new System.Drawing.Point(147, 90);
+            this.hhpEncoding.Name = "hhpEncoding";
+            this.hhpEncoding.Size = new System.Drawing.Size(161, 26);
+            this.hhpEncoding.TabIndex = 6;
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(144, 128);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(481, 54);
+            this.label4.TabIndex = 7;
+            this.label4.Text = "* UTF-8/Unicode .hhp files aren\'t understood by help compiler!\r\n* Suitable encodi" +
+    "ng is already selected and don\'t change it.\r\n* Select UTF-8 for other purpose th" +
+    "an compile.";
+            // 
             // ExportChmForm
             // 
             this.AcceptButton = this.OKBtn;
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoScaleDimensions = new System.Drawing.SizeF(144F, 144F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.CancelButton = this.CancelBtn;
-            this.ClientSize = new System.Drawing.Size(548, 93);
+            this.ClientSize = new System.Drawing.Size(949, 288);
+            this.Controls.Add(this.label4);
+            this.Controls.Add(this.hhpEncoding);
+            this.Controls.Add(this.label3);
+            this.Controls.Add(this.linkLabel1);
             this.Controls.Add(this.CancelBtn);
             this.Controls.Add(this.OKBtn);
             this.Controls.Add(this.BrowseBtn);
@@ -126,12 +185,14 @@ namespace PackageThis
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+            this.Margin = new System.Windows.Forms.Padding(5, 4, 5, 4);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "ExportChmForm";
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Export to Chm";
+            this.Load += new System.EventHandler(this.ExportChmForm_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -147,5 +208,10 @@ namespace PackageThis
         public System.Windows.Forms.TextBox ChmFileTextBox;
         public System.Windows.Forms.TextBox TitleTextBox;
         private System.Windows.Forms.SaveFileDialog saveFileDialog1;
+        private System.Windows.Forms.LinkLabel linkLabel1;
+        private System.Windows.Forms.ToolTip linkUrl;
+        private System.Windows.Forms.Label label3;
+        public System.Windows.Forms.ComboBox hhpEncoding;
+        private System.Windows.Forms.Label label4;
     }
 }

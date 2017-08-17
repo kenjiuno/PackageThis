@@ -12,7 +12,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("https://github.com/enlarsen/PackageThis and https://github.com/kenjiuno/PackageThis")]
 [assembly: AssemblyProduct("PackageThis")]
-[assembly: AssemblyCopyright("Copyright © Microsoft 2008,2017")]
+[assembly: AssemblyCopyright("Copyright © enlarsen and kenjiuno 2008,2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -31,5 +31,5 @@ using System.Runtime.InteropServices;
 //      Build Number
 //      Revision
 //
-[assembly: AssemblyVersion("1.3.2")]
-[assembly: AssemblyFileVersion("1.3.2")]
+[assembly:     AssemblyVersion("1.3.3")]
+[assembly: AssemblyFileVersion("1.3.3")]

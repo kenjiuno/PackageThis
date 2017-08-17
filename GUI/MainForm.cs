@@ -10,6 +10,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.Globalization;
 using ContentServiceLibrary;
+using System.Linq;
 
 namespace PackageThis {
     public partial class MainForm : Form {
@@ -190,10 +191,47 @@ namespace PackageThis {
         }
 
         private void saveToolStripMenuItem_Click(object sender, EventArgs e) {
-            if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+            if (saveFileDialog1.ShowDialog() == DialogResult.OK) {
                 ContentDataSet.Tables["ItemInstance"].WriteXml(saveFileDialog1.FileName, XmlWriteMode.WriteSchema);
+                openFileDialog1.FileName = saveFileDialog1.FileName;
+            }
         }
 
+        private void loadToolStripMenuItem_Click(object sender, EventArgs e) {
+            if (openFileDialog1.ShowDialog() == DialogResult.OK) {
+                var dataSet = new Content();
+                dataSet.EnforceConstraints = false;
+                dataSet.ReadXml(openFileDialog1.FileName);
+                foreach (Content.ItemInstanceRow row in dataSet.ItemInstance.Select()) {
+                    findAndCheckNode(TOCTreeView.Nodes, row.FullPath);
+                }
+                saveFileDialog1.FileName = openFileDialog1.FileName;
+            }
+        }
+
+        private void findAndCheckNode(TreeNodeCollection nodes, string fullPath) {
+            Update();
+
+            var oneAndMore = fullPath.Split(new char[] { '\x0098' }, 2);
+            foreach (TreeNode subNode in nodes) {
+                if (subNode.Text != oneAndMore[0]) {
+                    continue;
+                }
+                subNode.Expand();
+                if (oneAndMore.Length == 2) {
+                    // walk child
+                    findAndCheckNode(subNode.Nodes, oneAndMore[1]);
+                }
+                else {
+                    // uncheck first
+                    if (subNode.Checked) {
+                        subNode.Checked = false;
+                    }
+                    // check me
+                    subNode.Checked = true;
+                }
+            }
+        }
 
         private void selectNodeAndChildrenToolStripMenuItem_Click(object sender, EventArgs e) {
             DownloadProgressForm dpf = new DownloadProgressForm(TOCTreeView.SelectedNode,
@@ -249,17 +287,69 @@ namespace PackageThis {
 
             ExportChmForm ecf = new ExportChmForm();
 
+            var title = guessTitle();
+            ecf.ChmFileTextBox.Text = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), title + ".chm");
+            ecf.TitleTextBox.Text = title;
+
             if (ecf.ShowDialog() != DialogResult.OK)
                 return;
 
             appController.CreateChm(ecf.ChmFileTextBox.Text, ecf.TitleTextBox.Text,
-                tocLocale, ContentDataSet);
+                tocLocale, ContentDataSet, Encoding.GetEncoding(ecf.hhpEncoding.Text));
 
 
         }
 
+        private string guessTitle() {
+            return Path.GetFileName((guessTitleFrom(TOCTreeView.Nodes, null) ?? "No Contents").Replace(TOCTreeView.PathSeparator, "\\"));
+        }
+
+        private string guessTitleFrom(TreeNodeCollection nodes, String defaultTitle) {
+            List<string> titles = new List<string>();
+            List<string> checkedTitles = new List<string>();
+            foreach (TreeNode subNode in nodes) {
+                if (subNode.Checked) {
+                    if (defaultTitle != null) {
+                        return defaultTitle;
+                    }
+                    checkedTitles.Add(subNode.Text);
+                }
+                titles.Add(guessTitleFrom(subNode.Nodes, subNode.FullPath));
+            }
+            titles.RemoveAll(title => title == null || title.Length == 0 || title == "+");
+            if (titles.Count == 0) {
+                if (defaultTitle == null) {
+                    if (checkedTitles.Count != 0) {
+                        return String.Join(", ", checkedTitles);
+                    }
+                    else {
+                        return "No Contents";
+                    }
+                }
+                return null;
+            }
+            for (int x = 0; x < titles[0].Length; x++) {
+                var prefix = titles[0].Substring(0, x);
+                for (int y = 1; y < titles.Count; y++) {
+                    if (!titles[y].StartsWith(prefix)) {
+                        if (x == 0) {
+                            return null;
+                        }
+                        else {
+                            return prefix.Remove(prefix.Length - 1);
+                        }
+                    }
+                }
+            }
+            return titles[0];
+        }
+
         private void exportToHxsFileToolStripMenuItem_Click(object sender, EventArgs e) {
             GenerateHxsForm exportDialog = new GenerateHxsForm();
+
+            var title = guessTitle();
+            exportDialog.FileTextBox.Text = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), title + ".hxs");
+            exportDialog.TitleTextBox.Text = title;
 
             if (exportDialog.ShowDialog() != DialogResult.OK) {
                 return;
@@ -272,10 +362,6 @@ namespace PackageThis {
                 ContentDataSet);
 
         }
-
-
-
-
 
     }
 }

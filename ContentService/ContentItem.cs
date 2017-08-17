@@ -99,7 +99,7 @@ namespace ContentServiceLibrary {
         }
 
         // Added the loadFailSafe optimization
-        public void Load(bool loadImages, bool loadFailSafe) {
+        public void Load(bool loadImages, bool loadBody) {
 
             getContentRequest request = new getContentRequest();
 
@@ -130,10 +130,10 @@ namespace ContentServiceLibrary {
             document.selector = "Mtps.Annotations";
             documents.Add(document);
 
-            if (loadFailSafe == true) {
+            if (loadBody == true) {
                 document = new requestedDocument();
                 document.type = documentTypes.primary;
-                document.selector = "Mtps.Failsafe";
+                document.selector = "Mtps.Xhtml";
                 documents.Add(document);
 
             }
@@ -183,7 +183,7 @@ namespace ContentServiceLibrary {
             foreach (primary primaryDoc in response.primaryDocuments) {
                 if (primaryDoc.Any != null) {
                     switch (primaryDoc.primaryFormat.ToLower()) {
-                        case "mtps.failsafe":
+                        case "mtps.xhtml":
                             xml = primaryDoc.Any.OuterXml;
                             break;
 
@@ -224,7 +224,9 @@ namespace ContentServiceLibrary {
                 }
 
                 request.requestedDocuments = imageDocs;
-                response = proxy.GetContent(request);
+                response = MyCacheImpl.GetContentOr(request, delegate () {
+                    return proxy.GetContent(request);
+                });
 
                 foreach (image imageDoc in response.imageDocuments) {
                     string imageFilename = imageDoc.name + "." + imageDoc.imageFormat;
