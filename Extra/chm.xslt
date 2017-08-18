@@ -369,6 +369,13 @@
     </script>
   </xsl:template>
 
+  <xsl:template match="mtps:CodeSnippet">
+    <pre>
+      <xsl:apply-templates select="@*"/>
+      <xsl:value-of select="." disable-output-escaping="yes" />
+    </pre>
+  </xsl:template>
+
   <xsl:template mode="annotations" match="//an:annotations">
     <table class="ccHeader" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:5px 0px 0px 0px; border">
       <tr style="height:66px;max-height:66px;margin:0px 0px 0px 0px">
