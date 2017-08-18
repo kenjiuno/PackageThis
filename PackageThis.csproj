@@ -138,6 +138,7 @@
     <Compile Include="Export\ICompilable.cs" />
     <Compile Include="Export\IProgressReporter.cs" />
     <Compile Include="Export\Link.cs" />
+    <Compile Include="GUI\IProgressMonitor.cs" />
     <Compile Include="GUI\MainForm.cs">
       <SubType>Form</SubType>
     </Compile>

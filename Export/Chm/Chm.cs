@@ -100,7 +100,7 @@ namespace PackageThis {
         }
 
 
-        public void Create() {
+        public void Create(IProgressMonitor monitor) {
             if (Directory.Exists(chmDir) == true) {
                 Directory.Delete(chmDir, true);
             }
@@ -108,13 +108,26 @@ namespace PackageThis {
             Directory.CreateDirectory(chmDir);
             Directory.CreateDirectory(withinChmDir);
 
-            foreach (string file in Directory.GetFiles(rawDir)) {
+            var files = Directory.GetFiles(rawDir);
+            monitor.beginTask("Copying " + files.Length + " source files", files.Length);
+            foreach (string file in files) {
+                if (monitor.isCanceled()) {
+                    return;
+                }
                 File.Copy(file, Path.Combine(withinChmDir, Path.GetFileName(file)), true);
+                monitor.worked(1);
             }
 
             Hhk hhk = new Hhk(Path.Combine(chmDir, baseName + ".hhk"), locale);
 
-            foreach (DataRow row in contentDataSet.Tables["Item"].Rows) {
+            var itemRows = contentDataSet.Tables["Item"].Rows;
+
+            monitor.beginTask("Building " + itemRows.Count + " items .hhk", itemRows.Count);
+
+            foreach (DataRow row in itemRows) {
+                if (monitor.isCanceled()) {
+                    return;
+                }
                 if (Int32.Parse(row["Size"].ToString()) != 0) {
                     Transform(row["ContentId"].ToString(),
                         row["Metadata"].ToString(),
@@ -138,12 +151,14 @@ namespace PackageThis {
                             row["Title"].ToString());
                     }
                 }
+                monitor.worked(1);
             }
 
             hhk.Save();
 
             int lcid = new CultureInfo(locale).LCID;
 
+            monitor.beginTask("Create TOC", 1);
 
             // Create TOC
             Hhc hhc = new Hhc(Path.Combine(chmDir, baseName + ".hhc"), locale);
@@ -157,6 +172,7 @@ namespace PackageThis {
                 }
             }
 
+            monitor.beginTask("WriteExtraFiles", 1);
 
             WriteExtraFiles();
 
@@ -164,6 +180,7 @@ namespace PackageThis {
 
             expectedLines = numFiles + 15;
 
+            monitor.done();
         }
 
         public void Compile(IProgressReporter progressReporter) {
@@ -201,16 +218,21 @@ namespace PackageThis {
             //            compileProcess.BeginOutputReadLine();
             //            compileProcess.WaitForExit();
 
-            progressReporter.ProgressMessage("Compiling");
-
-            String allStdOut = "";
-            System.Threading.ThreadPool.QueueUserWorkItem(
-                delegate {
-                    allStdOut = streamReader.ReadToEnd();
-                }, null
+            StringWriter allStdOut = new StringWriter();
+            var captureStdOut = new System.Threading.Thread(
+                () => {
+                    String row;
+                    while (null != (row = streamReader.ReadLine())) {
+                        progressReporter.ProgressMessage("Compiling");
+                        allStdOut.WriteLine(row);
+                    }
+                }
             );
+            captureStdOut.Start();
 
             compileProcess.WaitForExit();
+
+            captureStdOut.Join();
 
             var exitCode = compileProcess.ExitCode;
 
@@ -218,8 +240,12 @@ namespace PackageThis {
 
             // 1 is success
             if (exitCode != 1) {
-                throw new ApplicationException(allStdOut);
+                throw new ApplicationException(allStdOut.ToString());
             }
+        }
+
+        private void Thread(Func<object> p1, object p2) {
+            throw new NotImplementedException();
         }
 
         public void CreateHhc(TreeNodeCollection nodeCollection, Hhc hhc, Content contentDataSet) {

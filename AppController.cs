@@ -346,20 +346,24 @@ namespace PackageThis {
             Chm chm = new Chm(workingDir, title,
                 chmFile, locale, tocControl.Nodes, contentDataSet, links, hhpEncoding);
 
-            using (var firstProgress = SimpleProgressForm.Display("Copying files")) {
-                chm.Create();
+            var ok = SimpleProgressForm.ShowDialogAndWait(monitor => {
+                chm.Create(monitor);
+            });
+
+            if (ok) {
+                ExportProgressForm progressForm = new ExportProgressForm(chm, chm.expectedLines);
+
+                progressForm.ShowDialog();
             }
-
-            ExportProgressForm progressForm = new ExportProgressForm(chm, chm.expectedLines);
-
-            progressForm.ShowDialog();
 
         }
 
         public void CreateHxs(string hxsFile, string title, string copyright, string locale,
             Content contentDataSet) {
-            using (var firstProgress = SimpleProgressForm.Display("Copying files")) {
+            int expectedLines = 0;
+            Hxs hxs = null;
 
+            var ok = SimpleProgressForm.ShowDialogAndWait(monitor => {
                 if (Directory.Exists(hxsDir) == true) {
                     Directory.Delete(hxsDir, true);
                 }
@@ -367,14 +371,26 @@ namespace PackageThis {
                 Directory.CreateDirectory(hxsDir);
                 Directory.CreateDirectory(withinHxsDir);
 
-                foreach (string file in Directory.GetFiles(rawDir)) {
+
+                var sourceFiles = Directory.GetFiles(rawDir);
+                monitor.beginTask("Copying " + sourceFiles.Length + " files.", sourceFiles.Length);
+                foreach (string file in sourceFiles) {
+                    if (monitor.isCanceled()) {
+                        return;
+                    }
                     File.Copy(file, Path.Combine(withinHxsDir, Path.GetFileName(file)), true);
+                    monitor.worked(1);
                 }
 
                 // This will be used as a base name for forming all of the MSHelp files.
                 string baseFilename = Path.GetFileNameWithoutExtension(hxsFile);
 
-                foreach (DataRow row in contentDataSet.Tables["Item"].Rows) {
+                var itemsRow = contentDataSet.Tables["Item"].Rows;
+                monitor.beginTask("Transforming " + itemsRow.Count + " items.", itemsRow.Count);
+                foreach (DataRow row in itemsRow) {
+                    if (monitor.isCanceled()) {
+                        return;
+                    }
                     if (Int32.Parse(row["Size"].ToString()) != 0) {
                         Transform(row["ContentId"].ToString(),
                             row["Metadata"].ToString(),
@@ -382,8 +398,10 @@ namespace PackageThis {
                             row["VersionId"].ToString(),
                             contentDataSet);
                     }
+                    monitor.worked(1);
                 }
 
+                monitor.beginTask("Create TOC.", 1);
 
                 // Create TOC
                 Hxt hxt = new Hxt(Path.Combine(hxsDir, baseFilename + ".hxt"), Encoding.UTF8);
@@ -391,9 +409,13 @@ namespace PackageThis {
                 hxt.Close();
 
 
+                monitor.beginTask("CreateHxks.", 1);
+
                 CreateHxks(baseFilename);
 
                 WriteExtraFiles();
+
+                monitor.beginTask("Hxf.", 1);
 
                 Hxf hxf = new Hxf(Path.Combine(hxsDir, baseFilename + ".hxf"), Encoding.UTF8);
 
@@ -411,25 +433,28 @@ namespace PackageThis {
                 int numHtmlFiles = Directory.GetFiles(hxsDir, "*.htm", SearchOption.AllDirectories).Length;
                 int numFiles = Directory.GetFiles(hxsDir, "*", SearchOption.AllDirectories).Length;
 
+                monitor.beginTask("Prepare Hxs compile.", 1);
+
                 // This gives the number of information lines output by the compiler. It
                 // was determined experimentally, and should give some means of making an
                 // accurate progress bar during a compile.
                 // Actual equation is numInfoLines = 2*numHtmlFiles + (numFiles - numHtmlFiles) + 6
                 // After factoring, we get this equation
-                int expectedLines = numHtmlFiles + numFiles + 6;
+                expectedLines = numHtmlFiles + numFiles + 6;
 
-                Hxs hxs = new Hxs(Path.Combine(Path.GetFullPath(hxsDir), baseFilename + ".hxc"),
+                hxs = new Hxs(Path.Combine(Path.GetFullPath(hxsDir), baseFilename + ".hxc"),
                     Path.GetFullPath(hxsDir),
                     Path.GetFullPath(hxsFile));
 
-                firstProgress.Close();
+                monitor.done();
 
+            });
+
+            if (ok) {
                 ExportProgressForm hxsProgressForm = new ExportProgressForm(hxs, expectedLines);
 
                 hxsProgressForm.ShowDialog();
             }
-
-
         }
         public void CreateHxt(TreeNodeCollection nodeCollection, Hxt hxt, Content contentDataSet) {
             bool opened = false; // Keep track of opening or closing of TOC entries in the .hxt
