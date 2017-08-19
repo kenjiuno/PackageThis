@@ -178,7 +178,7 @@ namespace PackageThis {
 
             int numFiles = Directory.GetFiles(chmDir, "*", SearchOption.AllDirectories).Length;
 
-            expectedLines = numFiles + 15;
+            expectedLines = 2 * numFiles + 15;
 
             monitor.done();
         }

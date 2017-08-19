@@ -15,6 +15,7 @@
   xmlns:MSHelp="http://msdn.microsoft.com/mshelp"
   xmlns:se="urn:mtpg-com:mtps/2004/1/search"
   xmlns:an="urn:mtpg-com:mtps/2007/1/annotations"
+  xmlns:ms="urn:schemas-microsoft-com:xslt"
 
   exclude-result-prefixes="hxLink mtps xhtml mtps2 k asp se an">
 
@@ -376,6 +377,29 @@
     </pre>
   </xsl:template>
 
+  <xsl:template match="mtps:CollapsibleArea">
+    <h3>
+      <xsl:value-of select="@Title" />
+    </h3>
+    <xsl:apply-templates/>
+  </xsl:template>
+
+  <xsl:template match="mtps:Sentence">
+    <blockquote>
+      <xsl:apply-templates/>
+    </blockquote>
+  </xsl:template>
+
+  <xsl:template match="mtps:InstrumentedLink">
+    <a>
+      <xsl:attribute name="href">
+        <xsl:value-of select="hxLink:LookupContentId(@NavigateUrl)"/>
+        <xsl:text>.html</xsl:text>
+      </xsl:attribute>
+      <xsl:apply-templates/>
+    </a>
+  </xsl:template>
+
   <xsl:template mode="annotations" match="//an:annotations">
     <table class="ccHeader" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:5px 0px 0px 0px; border">
       <tr style="height:66px;max-height:66px;margin:0px 0px 0px 0px">
@@ -410,7 +434,7 @@
             </span>
           </td>
           <td>
-              <xsl:apply-templates mode="annotations" select="an:lastEditedUTC" /> UTC
+            <xsl:apply-templates mode="annotations" select="an:lastEditedUTC" /> UTC
           </td>
           <td align="right">
             <xsl:apply-templates mode="annotations" select="an:user" />

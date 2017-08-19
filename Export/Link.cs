@@ -49,6 +49,17 @@ namespace PackageThis
                     return assetId;                
             }
             return href;
-        } 
+        }
+
+        public string LookupContentId(string href) {
+            if (href.ToLower().StartsWith("assetid:") == true) {
+                string assetId = HttpUtility.UrlDecode(href.Remove(0, "assetid:".Length).ToLower());
+
+                if (links.ContainsKey(assetId) == true) {
+                    return links[assetId];
+                }
+            }
+            return href;
+        }
     }
 }

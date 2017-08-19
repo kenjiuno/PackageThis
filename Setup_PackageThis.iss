@@ -4,8 +4,8 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING .ISS SCRIPT FILES!
 
 [Setup]
-AppName=PackageThis
-AppVersion=1.3.4
+AppName=PackageThisEx
+AppVersion=1.3.5
 DefaultDirName={localappdata}\PackageThis
 DefaultGroupName=PackageThis
 UninstallDisplayIcon={localappdata}\PackageThis.exe

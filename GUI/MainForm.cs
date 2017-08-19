@@ -45,6 +45,7 @@ namespace PackageThis {
             appController = new AppController(rootContentItem.contentId, currentLocale, rootContentItem.version,
                 TOCTreeView, workingDir);
 
+            Text += " " + Application.ProductVersion;
         }
 
         private void selectLocale_Click(object sender, EventArgs e) {
@@ -199,13 +200,15 @@ namespace PackageThis {
 
         private void loadToolStripMenuItem_Click(object sender, EventArgs e) {
             if (openFileDialog1.ShowDialog() == DialogResult.OK) {
-                var dataSet = new Content();
-                dataSet.EnforceConstraints = false;
-                dataSet.ReadXml(openFileDialog1.FileName);
-                foreach (Content.ItemInstanceRow row in dataSet.ItemInstance.Select()) {
-                    findAndCheckNode(TOCTreeView.Nodes, row.FullPath);
+                foreach (var filePath in openFileDialog1.FileNames) {
+                    var dataSet = new Content();
+                    dataSet.EnforceConstraints = false;
+                    dataSet.ReadXml(filePath);
+                    foreach (Content.ItemInstanceRow row in dataSet.ItemInstance.Select()) {
+                        findAndCheckNode(TOCTreeView.Nodes, row.FullPath);
+                    }
+                    saveFileDialog1.FileName = openFileDialog1.FileName;
                 }
-                saveFileDialog1.FileName = openFileDialog1.FileName;
             }
         }
 
@@ -301,47 +304,37 @@ namespace PackageThis {
         }
 
         private string guessTitle() {
-            return Path.GetFileName((guessTitleFrom(TOCTreeView.Nodes, null) ?? "No Contents").Replace(TOCTreeView.PathSeparator, "\\"));
+            List<string> fullPaths = new List<string>(
+                getAllCheckedNodes().Select(node => node.FullPath)
+                );
+            if (fullPaths.Count == 0) {
+                return "No Contents";
+            }
+            var firstNodePathParts = fullPaths[0].Split(new string[] { TOCTreeView.PathSeparator }, StringSplitOptions.None);
+            for (int x = firstNodePathParts.Length; x > 0; x--) {
+                var basePath = String.Join(TOCTreeView.PathSeparator, firstNodePathParts, 0, x);
+                if (fullPaths.All(fullPath => fullPath.StartsWith(basePath))) {
+                    return firstNodePathParts[x - 1];
+                }
+            }
+            return String.Join(", ", fullPaths
+                .Select(fullPath => fullPath.Split(new string[] { TOCTreeView.PathSeparator }, StringSplitOptions.None).First())
+                .Distinct()
+                );
         }
 
-        private string guessTitleFrom(TreeNodeCollection nodes, String defaultTitle) {
-            List<string> titles = new List<string>();
-            List<string> checkedTitles = new List<string>();
-            foreach (TreeNode subNode in nodes) {
-                if (subNode.Checked) {
-                    if (defaultTitle != null) {
-                        return defaultTitle;
+        private IEnumerable<TreeNode> getAllCheckedNodes() {
+            Stack<TreeNodeCollection> nodeCollections = new Stack<TreeNodeCollection>();
+            nodeCollections.Push(TOCTreeView.Nodes);
+            while (nodeCollections.Count != 0) {
+                var nodeCollection = nodeCollections.Pop();
+                foreach (TreeNode subNode in nodeCollection) {
+                    if (subNode.Checked) {
+                        yield return subNode;
                     }
-                    checkedTitles.Add(subNode.Text);
-                }
-                titles.Add(guessTitleFrom(subNode.Nodes, subNode.FullPath));
-            }
-            titles.RemoveAll(title => title == null || title.Length == 0 || title == "+");
-            if (titles.Count == 0) {
-                if (defaultTitle == null) {
-                    if (checkedTitles.Count != 0) {
-                        return String.Join(", ", checkedTitles);
-                    }
-                    else {
-                        return "No Contents";
-                    }
-                }
-                return null;
-            }
-            for (int x = 0; x < titles[0].Length; x++) {
-                var prefix = titles[0].Substring(0, x);
-                for (int y = 1; y < titles.Count; y++) {
-                    if (!titles[y].StartsWith(prefix)) {
-                        if (x == 0) {
-                            return null;
-                        }
-                        else {
-                            return prefix.Remove(prefix.Length - 1);
-                        }
-                    }
+                    nodeCollections.Push(subNode.Nodes);
                 }
             }
-            return titles[0];
         }
 
         private void exportToHxsFileToolStripMenuItem_Click(object sender, EventArgs e) {
@@ -363,5 +356,18 @@ namespace PackageThis {
 
         }
 
+        private void clearAllSelectionsToolStripMenuItem_Click(object sender, EventArgs e) {
+            // very SLOW! it is better choice if you restart app.
+            uncheckAll(TOCTreeView.Nodes);
+        }
+
+        private void uncheckAll(TreeNodeCollection nodes) {
+            foreach (TreeNode subNode in nodes) {
+                if (subNode.Checked) {
+                    subNode.Checked = false;
+                }
+                uncheckAll(subNode.Nodes);
+            }
+        }
     }
 }
