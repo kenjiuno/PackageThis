@@ -122,7 +122,7 @@ namespace PackageThis {
 
             var itemRows = contentDataSet.Tables["Item"].Rows;
 
-            monitor.beginTask("Building " + itemRows.Count + " items .hhk", itemRows.Count);
+            monitor.beginTask("Transforming " + itemRows.Count + " items", itemRows.Count);
 
             foreach (DataRow row in itemRows) {
                 if (monitor.isCanceled()) {
@@ -147,6 +147,12 @@ namespace PackageThis {
 
                     foreach (XmlNode xmlNode in xmlNodes) {
                         hhk.Add(xmlNode.InnerText,
+                            Path.Combine(chmSubDir, row["ContentId"].ToString() + ".htm"),
+                            row["Title"].ToString());
+                    }
+
+                    if (xmlNodes.Count == 0) {
+                        hhk.Add(row["Title"].ToString().Replace("&quot;", "\"").Replace("\"", "").Trim(),
                             Path.Combine(chmSubDir, row["ContentId"].ToString() + ".htm"),
                             row["Title"].ToString());
                     }

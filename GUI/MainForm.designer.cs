@@ -50,9 +50,6 @@ namespace PackageThis
             this.selectSiblingNodesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deselectThisNodeAndAllChildrenToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.DocsGrid = new System.Windows.Forms.DataGridView();
-            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
-            this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.contentIdDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.titleDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.versionIdDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -61,6 +58,11 @@ namespace PackageThis
             this.sizeDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.itemsBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.ContentDataSet = new PackageThis.Content();
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
+            this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            this.openWorkdirToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -94,6 +96,8 @@ namespace PackageThis
             this.toolStripSeparator1,
             this.exportToHxsFileToolStripMenuItem,
             this.toolStripMenuItem2,
+            this.toolStripSeparator2,
+            this.openWorkdirToolStripMenuItem,
             this.toolStripSeparator6,
             this.exitToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
@@ -103,8 +107,8 @@ namespace PackageThis
             // loadToolStripMenuItem
             // 
             this.loadToolStripMenuItem.Name = "loadToolStripMenuItem";
-            this.loadToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.L)));
-            this.loadToolStripMenuItem.Size = new System.Drawing.Size(364, 30);
+            this.loadToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
+            this.loadToolStripMenuItem.Size = new System.Drawing.Size(370, 30);
             this.loadToolStripMenuItem.Text = "Load And add Selections...";
             this.loadToolStripMenuItem.Click += new System.EventHandler(this.loadToolStripMenuItem_Click);
             // 
@@ -114,19 +118,19 @@ namespace PackageThis
             this.saveToolStripMenuItem.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
             this.saveToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
-            this.saveToolStripMenuItem.Size = new System.Drawing.Size(364, 30);
+            this.saveToolStripMenuItem.Size = new System.Drawing.Size(370, 30);
             this.saveToolStripMenuItem.Text = "&Save Selections...";
             this.saveToolStripMenuItem.Click += new System.EventHandler(this.saveToolStripMenuItem_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(315, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(361, 6);
             // 
             // exportToHxsFileToolStripMenuItem
             // 
             this.exportToHxsFileToolStripMenuItem.Name = "exportToHxsFileToolStripMenuItem";
-            this.exportToHxsFileToolStripMenuItem.Size = new System.Drawing.Size(318, 30);
+            this.exportToHxsFileToolStripMenuItem.Size = new System.Drawing.Size(364, 30);
             this.exportToHxsFileToolStripMenuItem.Text = "Export to Hxs File...";
             this.exportToHxsFileToolStripMenuItem.Click += new System.EventHandler(this.exportToHxsFileToolStripMenuItem_Click);
             // 
@@ -134,19 +138,19 @@ namespace PackageThis
             // 
             this.toolStripMenuItem2.Name = "toolStripMenuItem2";
             this.toolStripMenuItem2.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.H)));
-            this.toolStripMenuItem2.Size = new System.Drawing.Size(318, 30);
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(364, 30);
             this.toolStripMenuItem2.Text = "Export to Chm File...";
             this.toolStripMenuItem2.Click += new System.EventHandler(this.toolStripMenuItem2_Click);
             // 
             // toolStripSeparator6
             // 
             this.toolStripSeparator6.Name = "toolStripSeparator6";
-            this.toolStripSeparator6.Size = new System.Drawing.Size(315, 6);
+            this.toolStripSeparator6.Size = new System.Drawing.Size(361, 6);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(318, 30);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(364, 30);
             this.exitToolStripMenuItem.Text = "E&xit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
@@ -257,17 +261,6 @@ namespace PackageThis
             this.DocsGrid.Size = new System.Drawing.Size(1045, 807);
             this.DocsGrid.TabIndex = 0;
             // 
-            // saveFileDialog1
-            // 
-            this.saveFileDialog1.DefaultExt = "xml";
-            this.saveFileDialog1.Filter = "XML files|*.xml";
-            // 
-            // openFileDialog1
-            // 
-            this.openFileDialog1.DefaultExt = "xml";
-            this.openFileDialog1.Filter = "XML files|*.xml";
-            this.openFileDialog1.Multiselect = true;
-            // 
             // contentIdDataGridViewTextBoxColumn
             // 
             this.contentIdDataGridViewTextBoxColumn.DataPropertyName = "ContentId";
@@ -325,6 +318,29 @@ namespace PackageThis
             // 
             this.ContentDataSet.DataSetName = "Content";
             this.ContentDataSet.SchemaSerializationMode = System.Data.SchemaSerializationMode.IncludeSchema;
+            // 
+            // saveFileDialog1
+            // 
+            this.saveFileDialog1.DefaultExt = "xml";
+            this.saveFileDialog1.Filter = "XML files|*.xml";
+            // 
+            // openFileDialog1
+            // 
+            this.openFileDialog1.DefaultExt = "xml";
+            this.openFileDialog1.Filter = "XML files|*.xml";
+            this.openFileDialog1.Multiselect = true;
+            // 
+            // toolStripSeparator2
+            // 
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(361, 6);
+            // 
+            // openWorkdirToolStripMenuItem
+            // 
+            this.openWorkdirToolStripMenuItem.Name = "openWorkdirToolStripMenuItem";
+            this.openWorkdirToolStripMenuItem.Size = new System.Drawing.Size(364, 30);
+            this.openWorkdirToolStripMenuItem.Text = "Open workdir";
+            this.openWorkdirToolStripMenuItem.Click += new System.EventHandler(this.openWorkdirToolStripMenuItem_Click);
             // 
             // MainForm
             // 
@@ -386,6 +402,8 @@ namespace PackageThis
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem2;
         private System.Windows.Forms.ToolStripMenuItem libraryToolStripMenuItem;
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+        private System.Windows.Forms.ToolStripMenuItem openWorkdirToolStripMenuItem;
     }
 }
 

@@ -391,13 +391,20 @@
   </xsl:template>
 
   <xsl:template match="mtps:InstrumentedLink">
-    <a>
-      <xsl:attribute name="href">
-        <xsl:value-of select="hxLink:LookupContentId(@NavigateUrl)"/>
-        <xsl:text>.html</xsl:text>
-      </xsl:attribute>
-      <xsl:apply-templates/>
-    </a>
+    <xsl:choose>
+      <xsl:when test="hxLink:CanIPlaceThisLink(@NavigateUrl)">
+        <a>
+          <xsl:attribute name="href">
+            <xsl:value-of select="hxLink:LookupContentId(@NavigateUrl)"/>
+            <xsl:text>.htm</xsl:text>
+          </xsl:attribute>
+          <xsl:apply-templates/>
+        </a>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:apply-templates/>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
 
   <xsl:template mode="annotations" match="//an:annotations">

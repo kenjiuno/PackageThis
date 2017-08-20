@@ -5,7 +5,7 @@
 
 [Setup]
 AppName=PackageThisEx
-AppVersion=1.3.5
+AppVersion=1.3.6
 DefaultDirName={localappdata}\PackageThis
 DefaultGroupName=PackageThis
 UninstallDisplayIcon={localappdata}\PackageThis.exe

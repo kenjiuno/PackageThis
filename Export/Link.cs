@@ -6,31 +6,25 @@ using System.Data;
 using System.Text;
 using System.Web;
 
-namespace PackageThis
-{
-    public class Link
-    {
+namespace PackageThis {
+    public class Link {
         private Content contentDataSet;
         private Dictionary<string, string> links;
 
-        public Link(Content contentDataSet, Dictionary<string, string> links)
-        {
+        public Link(Content contentDataSet, Dictionary<string, string> links) {
             this.contentDataSet = contentDataSet;
             this.links = links;
         }
 
         // Called by the transform to lookup an href. If it begins with "AssetId:", we lookup
         // its aKeyword.
-        public string Resolve(string href, string version, string locale, bool returnContentId)
-        {
-            if(href.ToLower().StartsWith("assetid:") == true)
-            {
+        public string Resolve(string href, string version, string locale, bool returnContentId) {
+            if (href.ToLower().StartsWith("assetid:") == true) {
                 string assetId = HttpUtility.UrlDecode(href.Remove(0, "assetid:".Length).ToLower());
 
                 DataRow row = contentDataSet.Tables["Item"].Rows.Find(assetId);
 
-                if (row == null)
-                {
+                if (row == null) {
                     string target = assetId;
 
                     if (links.ContainsKey(assetId) == true)
@@ -46,7 +40,7 @@ namespace PackageThis
                 if (returnContentId == true)
                     return row["ContentId"].ToString();
                 else
-                    return assetId;                
+                    return assetId;
             }
             return href;
         }
@@ -60,6 +54,17 @@ namespace PackageThis
                 }
             }
             return href;
+        }
+
+        public bool CanIPlaceThisLink(string href) {
+            if (href.ToLower().StartsWith("assetid:") == true) {
+                string assetId = HttpUtility.UrlDecode(href.Remove(0, "assetid:".Length).ToLower());
+
+                if (contentDataSet.Item.FindByAssetId(assetId) != null) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }

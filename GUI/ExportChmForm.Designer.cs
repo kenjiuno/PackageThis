@@ -44,6 +44,9 @@ namespace PackageThis
             this.label3 = new System.Windows.Forms.Label();
             this.hhpEncoding = new System.Windows.Forms.ComboBox();
             this.label4 = new System.Windows.Forms.Label();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.guessTitles = new System.Windows.Forms.FlowLayoutPanel();
+            this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
             // label1
@@ -166,13 +169,34 @@ namespace PackageThis
     "ng is already selected and don\'t change it.\r\n* Select UTF-8 for other purpose th" +
     "an compile.";
             // 
+            // groupBox1
+            // 
+            this.groupBox1.Controls.Add(this.guessTitles);
+            this.groupBox1.Location = new System.Drawing.Point(802, 50);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(166, 284);
+            this.groupBox1.TabIndex = 11;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "Title suggestions:";
+            // 
+            // guessTitles
+            // 
+            this.guessTitles.AutoScroll = true;
+            this.guessTitles.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.guessTitles.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
+            this.guessTitles.Location = new System.Drawing.Point(3, 21);
+            this.guessTitles.Name = "guessTitles";
+            this.guessTitles.Size = new System.Drawing.Size(160, 260);
+            this.guessTitles.TabIndex = 0;
+            // 
             // ExportChmForm
             // 
             this.AcceptButton = this.OKBtn;
             this.AutoScaleDimensions = new System.Drawing.SizeF(144F, 144F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.CancelButton = this.CancelBtn;
-            this.ClientSize = new System.Drawing.Size(949, 288);
+            this.ClientSize = new System.Drawing.Size(980, 346);
+            this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.hhpEncoding);
             this.Controls.Add(this.label3);
@@ -193,6 +217,7 @@ namespace PackageThis
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Export to Chm";
             this.Load += new System.EventHandler(this.ExportChmForm_Load);
+            this.groupBox1.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -213,5 +238,7 @@ namespace PackageThis
         private System.Windows.Forms.Label label3;
         public System.Windows.Forms.ComboBox hhpEncoding;
         private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.GroupBox groupBox1;
+        public System.Windows.Forms.FlowLayoutPanel guessTitles;
     }
 }

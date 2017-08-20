@@ -290,9 +290,25 @@ namespace PackageThis {
 
             ExportChmForm ecf = new ExportChmForm();
 
-            var title = guessTitle();
-            ecf.ChmFileTextBox.Text = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), title + ".chm");
-            ecf.TitleTextBox.Text = title;
+            var titles = guessTitles();
+            {
+                var title = titles.First();
+                ecf.ChmFileTextBox.Text = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), title + ".chm");
+                ecf.TitleTextBox.Text = title;
+            }
+
+            foreach (var _ in titles) {
+                var title = _;
+                var b = new Button();
+                b.AutoSize = true;
+                b.Text = title;
+                b.Click += delegate {
+                    ecf.ChmFileTextBox.Text = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), title + ".chm");
+                    ecf.TitleTextBox.Text = title;
+                };
+                b.Margin = System.Windows.Forms.Padding.Empty;
+                ecf.guessTitles.Controls.Add(b);
+            }
 
             if (ecf.ShowDialog() != DialogResult.OK)
                 return;
@@ -303,24 +319,22 @@ namespace PackageThis {
 
         }
 
-        private string guessTitle() {
+        private IEnumerable<string> guessTitles() {
             List<string> fullPaths = new List<string>(
                 getAllCheckedNodes().Select(node => node.FullPath)
                 );
             if (fullPaths.Count == 0) {
-                return "No Contents";
+                yield return "No Contents";
+                yield break;
             }
             var firstNodePathParts = fullPaths[0].Split(new string[] { TOCTreeView.PathSeparator }, StringSplitOptions.None);
             for (int x = firstNodePathParts.Length; x > 0; x--) {
                 var basePath = String.Join(TOCTreeView.PathSeparator, firstNodePathParts, 0, x);
                 if (fullPaths.All(fullPath => fullPath.StartsWith(basePath))) {
-                    return firstNodePathParts[x - 1];
+                    yield return firstNodePathParts[x - 1];
                 }
             }
-            return String.Join(", ", fullPaths
-                .Select(fullPath => fullPath.Split(new string[] { TOCTreeView.PathSeparator }, StringSplitOptions.None).First())
-                .Distinct()
-                );
+            yield return rootContentItem.name;
         }
 
         private IEnumerable<TreeNode> getAllCheckedNodes() {
@@ -340,7 +354,8 @@ namespace PackageThis {
         private void exportToHxsFileToolStripMenuItem_Click(object sender, EventArgs e) {
             GenerateHxsForm exportDialog = new GenerateHxsForm();
 
-            var title = guessTitle();
+            var titles = guessTitles();
+            var title = titles.First();
             exportDialog.FileTextBox.Text = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), title + ".hxs");
             exportDialog.TitleTextBox.Text = title;
 
@@ -368,6 +383,10 @@ namespace PackageThis {
                 }
                 uncheckAll(subNode.Nodes);
             }
+        }
+
+        private void openWorkdirToolStripMenuItem_Click(object sender, EventArgs e) {
+            System.Diagnostics.Process.Start(workingDir);
         }
     }
 }
