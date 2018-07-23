@@ -253,29 +253,35 @@ namespace PackageThis {
                 return false; // tell the event handler to reject the click.
             }
 
-            if (contentDataSet.Tables["Item"].Rows.Find(mtpsNode.targetAssetId) == null) {
-                row = contentDataSet.Tables["Item"].NewRow();
-                row["ContentId"] = contentItem.contentId;
-                row["Title"] = mtpsNode.title;
-                row["VersionId"] = mtpsNode.targetVersion;
-                row["AssetId"] = mtpsNode.targetAssetId;
-                row["Pictures"] = contentItem.numImages;
-                row["Size"] = contentItem.xml == null ? 0 : contentItem.xml.Length;
-                row["Metadata"] = contentItem.metadata;
-                row["Annotations"] = contentItem.annotations;
+            if (string.IsNullOrEmpty(contentItem.contentId) == false)
+            {
+                if (contentDataSet.Tables["Item"].Rows.Find(mtpsNode.targetAssetId) == null)
+                {
+                    row = contentDataSet.Tables["Item"].NewRow();
+                    row["ContentId"] = contentItem.contentId;
+                    row["Title"] = mtpsNode.title;
+                    row["VersionId"] = mtpsNode.targetVersion;
+                    row["AssetId"] = mtpsNode.targetAssetId;
+                    row["Pictures"] = contentItem.numImages;
+                    row["Size"] = contentItem.xml == null ? 0 : contentItem.xml.Length;
+                    row["Metadata"] = contentItem.metadata;
+                    row["Annotations"] = contentItem.annotations;
 
-                contentDataSet.Tables["Item"].Rows.Add(row);
-            }
-            if (contentDataSet.Tables["ItemInstance"].Rows.Find(node.FullPath) == null) {
-                row = contentDataSet.Tables["ItemInstance"].NewRow();
-                row["ContentId"] = contentItem.contentId;
-                row["FullPath"] = node.FullPath;
-                contentDataSet.Tables["ItemInstance"].Rows.Add(row);
-            }
-            foreach (string imageFilename in contentItem.ImageFilenames) {
-                row = contentDataSet.Tables["Picture"].NewRow();
-                row["ContentId"] = contentItem.contentId;
-                row["Filename"] = imageFilename;
+                    contentDataSet.Tables["Item"].Rows.Add(row);
+                }
+                if (contentDataSet.Tables["ItemInstance"].Rows.Find(node.FullPath) == null)
+                {
+                    row = contentDataSet.Tables["ItemInstance"].NewRow();
+                    row["ContentId"] = contentItem.contentId;
+                    row["FullPath"] = node.FullPath;
+                    contentDataSet.Tables["ItemInstance"].Rows.Add(row);
+                }
+                foreach (string imageFilename in contentItem.ImageFilenames)
+                {
+                    row = contentDataSet.Tables["Picture"].NewRow();
+                    row["ContentId"] = contentItem.contentId;
+                    row["Filename"] = imageFilename;
+                }
             }
 
 
